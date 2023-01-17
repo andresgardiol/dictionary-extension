@@ -2,8 +2,8 @@ body {
     width: 20rem;
 }
 
-p {
-    margin: 0;
+h1 {
+    text-align: center;
 }
 
 #word {
@@ -51,6 +51,10 @@ button {
     font-size: 12px;
     margin: 4px 2px;
     cursor: pointer;
+}
+
+.full-width {
+    width: 94%;
 }
 
 .primary {
