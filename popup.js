@@ -16,7 +16,7 @@ wordInput.addEventListener('input', (event) => {
 	const input = wordInput.value.toLowerCase();
 	loadData().then((data) => {
 		if (data && data[input]) {
-			definitionTextArea.value = data[input];
+			definitionTextArea.value = JSON.stringify(data[input]);
 		} else {
 			definitionTextArea.value = '';
 		}
