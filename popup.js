@@ -14,9 +14,10 @@ form.addEventListener('submit', (event) => {
 const wordInput = document.getElementById('word');
 wordInput.addEventListener('input', (event) => {
 	loadData().then((data) => {
-		const input = wordInput.value.toLowerCase();
-		if (data && data[input]) {
-			let definition = data[input];
+		const input = wordInput.value
+		const inputLower = wordInput.value.toLowerCase();
+		let definition = data[input] || data[inputLower]
+		if (definition) {
 			if (typeof definition === 'object') {
 				definition = JSON.stringify(definition);
 			}
