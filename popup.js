@@ -14,9 +14,12 @@ form.addEventListener('submit', (event) => {
 const wordInput = document.getElementById('word');
 wordInput.addEventListener('input', (event) => {
 	loadData().then((data) => {
-		const input = wordInput.value
-		const inputLower = wordInput.value.toLowerCase();
-		let definition = data[input] || data[inputLower]
+		const inputOriginal = wordInput.value;
+		const inputLower = inputOriginal.toLowerCase();
+		const inputUpper = inputOriginal.toUpperCase();
+		const inputCapitalized = inputOriginal.charAt(0).toUpperCase() + inputOriginal.slice(1);;
+
+		let definition = data[inputOriginal] || data[inputLower] || data[inputUpper] || data[inputCapitalized]
 		if (definition) {
 			if (typeof definition === 'object') {
 				definition = JSON.stringify(definition);
