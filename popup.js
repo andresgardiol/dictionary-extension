@@ -13,8 +13,8 @@ form.addEventListener('submit', (event) => {
 
 const wordInput = document.getElementById('word');
 wordInput.addEventListener('input', (event) => {
-	const input = wordInput.value.toLowerCase();
 	loadData().then((data) => {
+		const input = wordInput.value.toLowerCase();
 		if (data && data[input]) {
 			let definition = data[input];
 			if (typeof definition === 'object') {
