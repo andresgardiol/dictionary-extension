@@ -1,13 +1,14 @@
-const dictionary = {};
 const definitionTextArea = document.getElementById('definition');
 
 const form = document.getElementById('form');
 form.addEventListener('submit', (event) => {
 	event.preventDefault();
 	if (wordInput.value && definitionTextArea.value) {
-		const input = wordInput.value.toLowerCase();
-		dictionary[input] = definitionTextArea.value;
-		saveData(dictionary);
+		loadData().then((data) => {
+			const input = wordInput.value.toLowerCase();
+			data[input] = definitionTextArea.value;
+			saveData(data);
+		});
 	}
 });
 
@@ -55,7 +56,6 @@ importButton.addEventListener('click', async (event) => {
 
 const deleteButton = document.getElementById('delete');
 deleteButton.addEventListener('click', (event) => {
-	// Prompt user to confirm deletion
 	if (confirm('Are you sure you want to delete all data?')) {
 		chrome.storage.local.clear();
 	}
