@@ -35,19 +35,30 @@ wordInput.addEventListener('input', (event) => {
 const exportButton = document.getElementById('export');
 exportButton.addEventListener('click', (event) => {
 	loadData().then((data) => {
-		console.log(JSON.stringify(data));
-		const json = JSON.stringify(data);
-		navigator.clipboard.writeText(json).catch(() => {
-			alert('Error copying data to clipboard');
+		const dataString = JSON.stringify(!data? {} : data)
+		console.log("Exported data:",dataString);
+		navigator.clipboard.writeText(dataString).catch((err) => {
+			console.log('Error copying data to clipboard', err);
 		});
 	});
 });
 
 const importButton = document.getElementById('import');
 importButton.addEventListener('click', async (event) => {
-	const json = window.prompt('Paste exported JSON here');
-	const data = JSON.parse(json);
-
+	const json = await navigator.clipboard.readText()
+		.catch((err)=> {
+			console.log("Error reading from clipboard", err)
+		});
+	if (json == null) {
+		console.log("Null json, not imported")
+		return
+	}
+	let data;
+	try {
+	 data = JSON.parse(json);
+	} catch(err) {
+		console.log("Error parsing clipboard data", err);
+	}
 	const oldData = await loadData();
 	const newData = {...oldData, ...data};
 
@@ -56,21 +67,24 @@ importButton.addEventListener('click', async (event) => {
 
 const deleteButton = document.getElementById('delete');
 deleteButton.addEventListener('click', (event) => {
-	if (confirm('Are you sure you want to delete all data?')) {
-		chrome.storage.local.clear();
-	}
+	deleteData()
 });
 
 const saveData = (data) => {
 	return chrome.storage.local.set({data: data})
 			.then(() => {
+				console.log("Successfully saved")
 			});
 }
 
 const loadData = () => {
 	return chrome.storage.local.get(['data'])
 			.then((result) => {
-				return result.data;
+				return !result.data? {} : result.data;
 			});
 }
 
+const deleteData = (data) => {
+	chrome.storage.local.clear();
+	console.log("Successfully deleted data", data);
+}

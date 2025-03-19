@@ -9,7 +9,8 @@
   },
   "permissions": [
     "storage",
-    "clipboard"
+    "clipboardWrite",
+    "clipboardRead"
   ],
   "commands": {
     "_execute_action": {
