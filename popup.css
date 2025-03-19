@@ -68,3 +68,7 @@ button {
 .warning {
     background-color: #f44336; /* Red */
 }
+
+#delete {
+    float: right;
+}
