@@ -45,7 +45,7 @@ exportButton.addEventListener('click', (event) => {
 
 const importButton = document.getElementById('import');
 importButton.addEventListener('click', async (event) => {
-	const json = prompt('Paste JSON here');
+	const json = window.prompt('Paste exported JSON here');
 	const data = JSON.parse(json);
 
 	const oldData = await loadData();
