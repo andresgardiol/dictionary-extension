@@ -793,20 +793,20 @@ importButton.addEventListener('click', async (event) => {
 	try {
 		const clipboardData = await navigator.clipboard.readText();
 		if (!clipboardData) {
-			showNotification('No hay datos en el clipboard', 'error');
-			return;
+					showNotification('No data in clipboard', 'error');
+		return;
 		}
 		
-		console.log('Iniciando importación con detección automática...');
+		console.log('Starting import with automatic detection...');
 		const result = await processAutoImport(clipboardData);
 		
 		if (!result.success && result.message) {
-			// Ya se mostró la notificación en processAutoImport, no mostrar otra
-			console.log('Importación fallida:', result.message);
+			// Notification already shown in processAutoImport, don't show another
+			console.log('Import failed:', result.message);
 		}
 	} catch (err) {
-		console.error('Error accediendo al clipboard:', err);
-		showNotification('Error accediendo al clipboard. Asegúrate de tener datos copiados.', 'error');
+		console.error('Error accessing clipboard:', err);
+		showNotification('Error accessing clipboard. Make sure you have data copied.', 'error');
 	}
 });
 
@@ -825,8 +825,8 @@ deleteButton.addEventListener('click', (event) => {
 const saveData = (data) => {
 	return chrome.storage.local.set({data: data})
 		.then(() => {
-			console.log("Datos guardados exitosamente");
-			return data;
+					console.log("Data saved successfully");
+		return data;
 		});
 }
 
@@ -839,7 +839,7 @@ const loadData = () => {
 
 const deleteData = () => {
 	chrome.storage.local.clear();
-	console.log("Datos eliminados exitosamente");
+	console.log("Data deleted successfully");
 }
 
 // Función para detectar si estamos escribiendo una etiqueta y mostrar el panel
@@ -1349,7 +1349,7 @@ function getWordDefinition(wordData) {
 // Mostrar modal de merge
 async function showMergeModal(conflicts, newWords, importedData, format) {
 	return new Promise((resolve) => {
-		console.log('Iniciando showMergeModal...');
+		console.log('Starting showMergeModal...');
 		
 		const modal = document.getElementById('merge-modal');
 		const conflictsCountEl = document.getElementById('conflicts-count');
@@ -1357,8 +1357,8 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 		const conflictsListEl = document.getElementById('conflicts-list');
 		
 		if (!modal) {
-			console.error('Modal no encontrado');
-			resolve({ success: false, message: 'Error: Modal no encontrado' });
+			console.error('Modal not found');
+			resolve({ success: false, message: 'Error: Modal not found' });
 			return;
 		}
 		
@@ -1391,25 +1391,25 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 		const proceedBtn = document.getElementById('merge-proceed');
 		const closeBtn = document.getElementById('merge-close');
 		
-		console.log('Botones encontrados:', { cancelBtn: !!cancelBtn, proceedBtn: !!proceedBtn, closeBtn: !!closeBtn });
+		console.log('Buttons found:', { cancelBtn: !!cancelBtn, proceedBtn: !!proceedBtn, closeBtn: !!closeBtn });
 		
-		// Verificar que los botones existen
+		// Verify that buttons exist
 		if (!cancelBtn || !proceedBtn || !closeBtn) {
-			console.error('No se pudieron encontrar los botones del modal');
+			console.error('Could not find modal buttons');
 			console.error('Cancel button:', cancelBtn);
 			console.error('Proceed button:', proceedBtn);
 			console.error('Close button:', closeBtn);
-			resolve({ success: false, message: 'Error interno: botones no encontrados' });
+			resolve({ success: false, message: 'Internal error: buttons not found' });
 			return;
 		}
 		
-		// Función para limpiar event listeners
+		// Function to clean up event listeners
 		const cleanup = () => {
-			console.log('Limpiando modal...');
+			console.log('Cleaning up modal...');
 			modal.classList.add('hidden');
 			pendingMergeData = null;
 			
-			// Remover event listeners con clones para evitar problemas
+			// Remove event listeners with clones to avoid issues
 			const newCancelBtn = cancelBtn.cloneNode(true);
 			const newProceedBtn = proceedBtn.cloneNode(true);
 			const newCloseBtn = closeBtn.cloneNode(true);
@@ -1417,24 +1417,24 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 			proceedBtn.parentNode.replaceChild(newProceedBtn, proceedBtn);
 			closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
 			
-			// Remover otros listeners
+			// Remove other listeners
 			document.removeEventListener('keydown', handleKeyPress);
 		};
 		
-		// Función para manejar cancelación
+		// Function to handle cancellation
 		const handleCancel = (e) => {
-			console.log('Cancelando merge...');
+			console.log('Canceling merge...');
 			if (e) {
 				e.preventDefault();
 				e.stopPropagation();
 			}
 			cleanup();
-			resolve({ success: false, message: 'Importación cancelada' });
+			resolve({ success: false, message: 'Import cancelled' });
 		};
 		
-		// Función para proceder
+		// Function to proceed
 		const handleProceed = async (e) => {
-			console.log('Procediendo con merge...');
+			console.log('Proceeding with merge...');
 			if (e) {
 				e.preventDefault();
 				e.stopPropagation();
@@ -1442,21 +1442,21 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 			
 			const strategyRadio = document.querySelector('input[name="merge-strategy"]:checked');
 			if (!strategyRadio) {
-				console.error('No se seleccionó ninguna estrategia');
-				showNotification('Por favor selecciona una estrategia', 'error');
+				console.error('No strategy selected');
+				showNotification('Please select a strategy', 'error');
 				return;
 			}
 			
 			const strategy = strategyRadio.value;
-			console.log('Estrategia seleccionada:', strategy);
+			console.log('Selected strategy:', strategy);
 			
-			// Confirmación adicional para operaciones críticas
+			// Additional confirmation for critical operations
 			const confirmationMessage = getConfirmationMessage(strategy, conflicts.length, newWords.length);
 			const userConfirmed = confirm(confirmationMessage);
 			
 			if (!userConfirmed) {
-				console.log('Usuario canceló la confirmación');
-				return; // No cerrar el modal, permitir que el usuario reconsidere
+				console.log('User cancelled confirmation');
+				return; // Don't close modal, allow user to reconsider
 			}
 			
 			cleanup();
@@ -1465,54 +1465,54 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 				const result = await processMerge(conflicts, newWords, importedData, strategy, format);
 				resolve(result);
 			} catch (error) {
-				console.error('Error durante el procesamiento:', error);
-				resolve({ success: false, message: 'Error durante el merge: ' + error.message });
+				console.error('Error during processing:', error);
+				resolve({ success: false, message: 'Error during merge: ' + error.message });
 			}
 		};
 		
-		// Función para manejar tecla ESC
+		// Function to handle ESC key
 		const handleKeyPress = (e) => {
 			if (e.key === 'Escape') {
 				handleCancel();
 			}
 		};
 		
-		// Función para manejar click en backdrop
+		// Function to handle backdrop click
 		const handleBackdropClick = (e) => {
 			if (e.target === modal) {
 				handleCancel();
 			}
 		};
 		
-		// Agregar event listeners
-		console.log('Agregando event listeners...');
+		// Add event listeners
+		console.log('Adding event listeners...');
 		cancelBtn.addEventListener('click', handleCancel);
 		proceedBtn.addEventListener('click', handleProceed);
-		closeBtn.addEventListener('click', handleCancel); // El botón X funciona igual que cancelar
+		closeBtn.addEventListener('click', handleCancel); // X button works same as cancel
 		modal.addEventListener('click', handleBackdropClick);
 		document.addEventListener('keydown', handleKeyPress);
 		
-		// Mostrar modal al final
-		console.log('Mostrando modal...');
+		// Show modal at the end
+		console.log('Showing modal...');
 		modal.classList.remove('hidden');
 		
-		console.log('Modal configurado completamente');
+		console.log('Modal fully configured');
 	});
 }
 
-// Procesar merge según estrategia seleccionada
+// Process merge according to selected strategy
 async function processMerge(conflicts, newWords, importedData, strategy, format) {
 	const existingData = await loadData();
 	let processedCount = 0;
 	let skippedCount = 0;
 	
-	// Procesar palabras nuevas (siempre se importan)
+	// Process new words (always imported)
 	for (const word of newWords) {
 		existingData[word] = importedData[word];
 		processedCount++;
 	}
 	
-	// Procesar conflictos según estrategia
+	// Process conflicts according to strategy
 	for (const conflict of conflicts) {
 		const word = conflict.word;
 		const existingDefinition = conflict.existing;
@@ -1520,7 +1520,7 @@ async function processMerge(conflicts, newWords, importedData, strategy, format)
 		
 		switch (strategy) {
 			case 'combine':
-				// Combinar: existente arriba, nueva abajo
+				// Combine: existing above, new below
 				const combinedDefinition = `${existingDefinition}\n\n---\n\n${newDefinition}`;
 				existingData[word] = typeof existingData[word] === 'object' 
 					? { ...existingData[word], definition: combinedDefinition }
@@ -1529,25 +1529,25 @@ async function processMerge(conflicts, newWords, importedData, strategy, format)
 				break;
 				
 			case 'replace':
-				// Reemplazar con nueva definición
+				// Replace with new definition
 				existingData[word] = importedData[word];
 				processedCount++;
 				break;
 				
 			case 'skip':
-				// Mantener existente, no hacer nada
+				// Keep existing, do nothing
 				skippedCount++;
 				break;
 		}
 	}
 	
-	// Guardar datos actualizados
+	// Save updated data
 	await saveData(existingData);
 	
-	// Preparar mensaje de resultado
-	let message = `${processedCount} palabras procesadas`;
+	// Prepare result message
+	let message = `${processedCount} words processed`;
 	if (skippedCount > 0) {
-		message += `, ${skippedCount} conflictos omitidos`;
+		message += `, ${skippedCount} conflicts skipped`;
 	}
 	
 	return {
@@ -1558,7 +1558,7 @@ async function processMerge(conflicts, newWords, importedData, strategy, format)
 	};
 }
 
-// Importación directa (sin conflictos)
+// Direct import (no conflicts)
 async function performDirectImport(importedData, format) {
 	const existingData = await loadData();
 	const mergedData = { ...existingData, ...importedData };
@@ -1567,79 +1567,79 @@ async function performDirectImport(importedData, format) {
 	
 	return {
 		success: true,
-		message: `${Object.keys(importedData).length} palabras importadas`,
+		message: `${Object.keys(importedData).length} words imported`,
 		processed: Object.keys(importedData).length,
 		skipped: 0
 	};
 }
 
-// Función auxiliar para truncar texto
+// Helper function to truncate text
 function truncateText(text, maxLength) {
 	if (text.length <= maxLength) return text;
 	return text.substring(0, maxLength) + '...';
 }
 
-// Función para generar mensaje de confirmación específico según la estrategia
+// Function to generate specific confirmation message according to strategy
 function getConfirmationMessage(strategy, conflictsCount, newWordsCount) {
-	let baseMessage = `¿Estás seguro de que quieres proceder?\n\n`;
-	baseMessage += `• ${newWordsCount} palabras nuevas se agregarán\n`;
-	baseMessage += `• ${conflictsCount} conflictos serán procesados\n\n`;
+	let baseMessage = `Are you sure you want to proceed?\n\n`;
+	baseMessage += `• ${newWordsCount} new words will be added\n`;
+	baseMessage += `• ${conflictsCount} conflicts will be processed\n\n`;
 	
 	switch (strategy) {
 		case 'combine':
-			baseMessage += `Estrategia COMBINAR:\n`;
-			baseMessage += `Las definiciones existentes se mantendrán y las nuevas se agregarán debajo con una línea separadora.\n\n`;
-			baseMessage += `⚠️ Esto modificará permanentemente ${conflictsCount} definiciones existentes.`;
+			baseMessage += `COMBINE Strategy:\n`;
+			baseMessage += `Existing definitions will be kept and new ones will be added below with a separator line.\n\n`;
+			baseMessage += `⚠️ This will permanently modify ${conflictsCount} existing definitions.`;
 			break;
 			
 		case 'replace':
-			baseMessage += `Estrategia REEMPLAZAR:\n`;
-			baseMessage += `Las definiciones existentes serán completamente sobrescritas con las nuevas.\n\n`;
-			baseMessage += `🚨 PELIGRO: Perderás permanentemente ${conflictsCount} definiciones existentes.`;
+			baseMessage += `REPLACE Strategy:\n`;
+			baseMessage += `Existing definitions will be completely overwritten with new ones.\n\n`;
+			baseMessage += `🚨 DANGER: You will permanently lose ${conflictsCount} existing definitions.`;
 			break;
 			
 		case 'skip':
-			baseMessage += `Estrategia MANTENER EXISTENTES:\n`;
-			baseMessage += `Solo se importarán las palabras nuevas. Los conflictos se ignorarán.\n\n`;
-			baseMessage += `ℹ️ Esta es la opción más segura - no se modificarán definiciones existentes.`;
+			baseMessage += `KEEP EXISTING Strategy:\n`;
+			baseMessage += `Only new words will be imported. Conflicts will be ignored.\n\n`;
+			baseMessage += `ℹ️ This is the safest option - no existing definitions will be modified.`;
 			break;
 	}
 	
-	baseMessage += `\n\n¿Continuar con la importación?`;
+	baseMessage += `\n\nContinue with import?`;
 	return baseMessage;
 }
 
-// Función para detectar automáticamente el formato de los datos
+// Function to automatically detect data format
 function detectDataFormat(data) {
 	if (!data || !data.trim()) {
-		return { format: null, error: 'No hay datos en el clipboard' };
+		return { format: null, error: 'No data in clipboard' };
 	}
 	
-	// Intentar detectar JSON
+	// Try to detect JSON
 	try {
 		const parsed = JSON.parse(data);
 		if (typeof parsed === 'object' && parsed !== null) {
 			return { format: 'json', data: parsed };
 		}
 	} catch (e) {
-		// No es JSON válido, continuar con otras detecciones
+		// Not valid JSON, continue with other detections
 	}
 	
-	// Detectar CSV - buscar comas y estructura de líneas
+	// Detect CSV - look for commas and line structure
 	const lines = data.split('\n').filter(line => line.trim());
 	if (lines.length >= 2) {
-		// Verificar si tiene estructura CSV (comas, posibles comillas)
+		// Check if it has CSV structure (commas, possible quotes)
 		const hasCommas = lines.every(line => line.includes(','));
 		const firstLineCommas = (lines[0].match(/,/g) || []).length;
 		const secondLineCommas = (lines[1].match(/,/g) || []).length;
 		
-		// Si las primeras líneas tienen el mismo número de comas, probablemente es CSV
+		// If first lines have same number of commas, probably CSV
 		if (hasCommas && firstLineCommas === secondLineCommas && firstLineCommas >= 1) {
 			return { format: 'csv', data: data };
 		}
 	}
 	
-	// Detectar formato TXT - Palabra\nDefinición\n\n
+	// Detect TXT format - Word\nDefinition\n\n
 	const entries = data.split('\n\n').filter(entry => entry.trim());
 	if (entries.length >= 1) {
 		const validTxtEntries = entries.filter(entry => {
@@ -1647,20 +1647,20 @@ function detectDataFormat(data) {
 			return entryLines.length >= 2 && entryLines[0].trim() && entryLines[1].trim();
 		});
 		
-		// Si al menos la mitad de las entradas tienen formato válido, considerarlo TXT
+		// If at least half of entries have valid format, consider it TXT
 		if (validTxtEntries.length >= Math.ceil(entries.length * 0.5)) {
 			return { format: 'txt', data: data };
 		}
 	}
 	
-	// Si llegamos aquí, no pudimos detectar el formato
+	// If we get here, couldn't detect format
 	return { 
 		format: null, 
-		error: 'No se pudo detectar el formato. Formatos soportados:\n• JSON: {"palabra": "definición"}\n• CSV: Palabra,Definición,Tags\n• TXT: Palabra\\nDefinición\\n\\n'
+		error: 'Could not detect format. Supported formats:\n• JSON: {"word": "definition"}\n• CSV: Word,Definition,Tags\n• TXT: Word\\nDefinition\\n\\n'
 	};
 }
 
-// Función para procesar importación con detección automática
+// Function to process import with automatic detection
 async function processAutoImport(data) {
 	const detection = detectDataFormat(data);
 	
@@ -1669,9 +1669,9 @@ async function processAutoImport(data) {
 		return { success: false, message: detection.error };
 	}
 	
-	console.log(`Formato detectado: ${detection.format.toUpperCase()}`);
+	console.log(`Detected format: ${detection.format.toUpperCase()}`);
 	
-	// Procesar según el formato detectado
+	// Process according to detected format
 	let importedData = {};
 	
 	try {
@@ -1689,13 +1689,13 @@ async function processAutoImport(data) {
 				break;
 		}
 		
-		// Usar merge inteligente
+		// Use intelligent merge
 		const result = await handleIntelligentMerge(importedData, detection.format);
 		
 		if (result.success) {
-			showNotification(`${result.message} (Formato: ${detection.format.toUpperCase()})`, 'success');
+			showNotification(`${result.message} (Format: ${detection.format.toUpperCase()})`, 'success');
 			
-			// Actualizar la lista de palabras si está visible
+			// Update word list if visible
 			if (document.getElementById('wordlist-tab').classList.contains('active')) {
 				loadWordsList();
 			}
@@ -1704,24 +1704,24 @@ async function processAutoImport(data) {
 		return result;
 		
 	} catch (error) {
-		console.error('Error procesando datos:', error);
-		const errorMessage = `Error procesando datos ${detection.format.toUpperCase()}: ${error.message}`;
+		console.error('Error processing data:', error);
+		const errorMessage = `Error processing ${detection.format.toUpperCase()} data: ${error.message}`;
 		showNotification(errorMessage, 'error');
 		return { success: false, message: errorMessage };
 	}
 }
 
-// Función auxiliar para parsear CSV
+// Helper function to parse CSV
 async function parseCSVData(csvText) {
 	const lines = csvText.split('\n');
 	const data = {};
 	let count = 0;
 	
-	// Empezar desde la segunda línea para omitir encabezados
+	// Start from second line to skip headers
 	for (let i = 1; i < lines.length; i++) {
 		if (!lines[i].trim()) continue;
 		
-		// Lógica para manejar correctamente comas dentro de campos con comillas
+		// Logic to correctly handle commas inside quoted fields
 		let parts = [];
 		let currentPart = '';
 		let inQuotes = false;
@@ -1753,15 +1753,15 @@ async function parseCSVData(csvText) {
 	}
 	
 	if (count === 0) {
-		throw new Error('No se encontraron datos válidos en el CSV');
+		throw new Error('No valid data found in CSV');
 	}
 	
 	return data;
 }
 
-// Función auxiliar para parsear TXT
+// Helper function to parse TXT
 async function parseTXTData(txtText) {
-	// Formato esperado: Palabra\nDefinición\n\n
+	// Expected format: Word\nDefinition\n\n
 	const entries = txtText.split('\n\n');
 	const data = {};
 	let count = 0;
@@ -1782,58 +1782,58 @@ async function parseTXTData(txtText) {
 	}
 	
 	if (count === 0) {
-		throw new Error('No se encontraron datos válidos en el formato TXT');
+		throw new Error('No valid data found in TXT format');
 	}
 	
 	return data;
 }
 
-// Función de prueba para el modal (solo para debug)
+// Test function for modal (debug only)
 window.testMergeModal = function() {
-	console.log('Iniciando prueba del modal...');
+	console.log('Starting modal test...');
 	
-	// Verificar que el modal existe antes de la prueba
+	// Verify modal exists before test
 	const modal = document.getElementById('merge-modal');
 	console.log('Modal element:', modal);
 	
-	// Verificar botones
+	// Verify buttons
 	const cancelBtn = document.getElementById('merge-cancel');
 	const proceedBtn = document.getElementById('merge-proceed');
 	const closeBtn = document.getElementById('merge-close');
 	console.log('Buttons found:', { cancel: !!cancelBtn, proceed: !!proceedBtn, close: !!closeBtn });
 	
 	if (!modal || !cancelBtn || !proceedBtn || !closeBtn) {
-		console.error('Modal o botones no encontrados');
+		console.error('Modal or buttons not found');
 		return;
 	}
 	
 	const testConflicts = [
 		{
 			word: 'test',
-			existing: 'Definición existente para prueba',
-			new: 'Nueva definición importada'
+			existing: 'Existing definition for test',
+			new: 'New imported definition'
 		}
 	];
-	const testNewWords = ['nueva1', 'nueva2'];
-	const testData = { test: 'nueva def', nueva1: 'def1', nueva2: 'def2' };
+	const testNewWords = ['new1', 'new2'];
+	const testData = { test: 'new def', new1: 'def1', new2: 'def2' };
 	
 	showMergeModal(testConflicts, testNewWords, testData, 'json')
 		.then(result => {
-			console.log('Resultado del modal:', result);
+			console.log('Modal result:', result);
 		})
 		.catch(error => {
-			console.error('Error en modal:', error);
+			console.error('Modal error:', error);
 		});
 };
 
-// Función simple para mostrar el modal sin lógica
+// Simple function to show modal without logic
 window.showModalSimple = function() {
 	const modal = document.getElementById('merge-modal');
 	if (modal) {
 		modal.classList.remove('hidden');
-		console.log('Modal mostrado directamente');
+		console.log('Modal shown directly');
 	} else {
-		console.error('Modal no encontrado');
+		console.error('Modal not found');
 	}
 };
 
