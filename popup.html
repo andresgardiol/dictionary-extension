@@ -93,7 +93,7 @@
 </div>
 
 <!-- Notifications container -->
-<div id="notification" class="notification hidden"></div>
+	<div id="notification" class="notification hidden" aria-live="polite" aria-atomic="true" role="status"></div>
 
 <div class="tab-container">
 	<div class="tabs" role="tablist" aria-label="Dictionary navigation">
@@ -114,11 +114,13 @@
 	<div class="tab-content active" id="main-tab" role="tabpanel" aria-labelledby="main-tab">
 		<form id="form">
 			<div id="search-container">
-				<div id="search-results" class="hidden"></div>
-				<input type="text" id="word" placeholder="Search or add word..." autofocus autocomplete="off"/>
+				<label for="word" class="sr-only">Word or search term</label>
+				<div id="search-results" class="hidden" role="listbox" aria-label="Search suggestions"></div>
+				<input type="text" id="word" placeholder="Search or add word..." autofocus autocomplete="off" aria-label="Enter word to search or add to dictionary"/>
 			</div>
 			
-			<textarea type="text" id="definition" placeholder="Definition"></textarea>
+			<label for="definition" class="sr-only">Definition</label>
+			<textarea type="text" id="definition" placeholder="Definition" aria-label="Enter definition for the word, use # for tags"></textarea>
 			
 			<!-- Available tags container -->
 			<div id="available-tags" class="available-tags hidden">
@@ -155,7 +157,8 @@
 		<div class="list-header">
 			<h3>Saved words</h3>
 			<div class="filter-container">
-				<input type="text" id="wordlist-filter" placeholder="Filter..." autocomplete="off"/>
+				<label for="wordlist-filter" class="sr-only">Filter words</label>
+				<input type="text" id="wordlist-filter" placeholder="Filter..." autocomplete="off" aria-label="Filter saved words"/>
 			</div>
 		</div>
 		

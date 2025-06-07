@@ -156,8 +156,8 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 		wordActions.appendChild(deleteBtn);
 		wordItem.appendChild(wordActions);
 		
-		// Añadir evento para cargar la palabra
-		wordItem.addEventListener('click', () => {
+		// Function to handle word selection
+		const selectWord = () => {
 			wordInput.value = word;
 			// Cargar la definición con formato apropiado
 			const wordData = loadWord(word, data);
@@ -181,6 +181,17 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 			}
 			switchTab('main');
 			addToHistory(word);
+		};
+		
+		// Add click event
+		wordItem.addEventListener('click', selectWord);
+		
+		// Add keyboard navigation
+		wordItem.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				selectWord();
+			}
 		});
 		
 		wordsList.appendChild(wordItem);
@@ -349,7 +360,8 @@ const loadHistoryList = async () => {
 		historyItem.setAttribute('role', 'button');
 		historyItem.setAttribute('aria-label', `Search for: ${word}`);
 		
-		historyItem.addEventListener('click', () => {
+		// Function to handle history selection
+		const selectHistoryWord = () => {
 			wordInput.value = word;
 			
 			// Cargar la definición con formato apropiado
@@ -375,6 +387,17 @@ const loadHistoryList = async () => {
 			}
 			
 			switchTab('main');
+		};
+		
+		// Add click event
+		historyItem.addEventListener('click', selectHistoryWord);
+		
+		// Add keyboard navigation
+		historyItem.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				selectHistoryWord();
+			}
 		});
 		
 		historyList.appendChild(historyItem);
@@ -548,7 +571,13 @@ wordInput.addEventListener('input', (event) => {
 				resultElement.style.transform = 'translateY(10px)';
 				resultElement.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
 				
-				resultElement.addEventListener('click', () => {
+				// Make search results keyboard accessible
+				resultElement.tabIndex = 0;
+				resultElement.setAttribute('role', 'option');
+				resultElement.setAttribute('aria-label', `Select word: ${word}`);
+				
+				// Function to select search result
+				const selectSearchResult = () => {
 					// Efecto visual al seleccionar
 					resultElement.style.backgroundColor = 'rgba(174, 68, 240, 0.4)';
 					resultElement.style.transform = 'scale(0.98)';
@@ -583,6 +612,17 @@ wordInput.addEventListener('input', (event) => {
 						searchContainer.classList.remove('active');
 						addToHistory(word);
 					}, 150); // Retraso para ver el efecto visual
+				};
+				
+				// Add click event
+				resultElement.addEventListener('click', selectSearchResult);
+				
+				// Add keyboard navigation
+				resultElement.addEventListener('keydown', (e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						selectSearchResult();
+					}
 				});
 				
 				// Agregar al principio para que aparezcan en orden correcto
