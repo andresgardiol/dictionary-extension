@@ -1,0 +1,95 @@
+# Diccionario Personal 2.0
+
+## ESPAÑOL
+
+**Descripción breve:**
+Un diccionario personal para tus términos de trabajo y estudio.
+
+**Descripción general:**
+Diccionario Personal es una extensión que te permite guardar y organizar definiciones de palabras o términos que utilizas habitualmente en tu trabajo o estudios. Ideal para equipos que manejan terminología específica o para estudiantes que necesitan recordar conceptos clave.
+
+**Características principales:**
+- Guarda términos con sus definiciones personalizadas
+- Búsqueda rápida y autocompletado de palabras
+- Sistema de etiquetas para categorizar y filtrar términos (#programacion, #abreviatura, etc.)
+- Historial de búsquedas recientes
+- Exportación e importación en formatos JSON, CSV y TXT
+- Interfaz intuitiva y moderna
+
+**Novedades en la versión 2.0:**
+- Sistema completo de etiquetas con autocompletado
+- Filtrado de palabras por etiquetas
+- Interfaz mejorada y más intuitiva
+- Búsqueda unificada y autocompletado
+- Exportación en múltiples formatos (JSON, CSV, TXT)
+- Historial de búsquedas recientes
+
+**Uso básico:**
+- Para abrir la extensión, presiona Ctrl+Q (Windows y macOS)
+- Escribe un término y su definición, añade etiquetas con el símbolo # y guárdalo
+- Filtra y organiza tus términos usando las etiquetas
+- Exporta tu diccionario para compartirlo con tu equipo
+
+---
+
+## ENGLISH
+
+**Brief description:**
+A personal dictionary for your work and study terms.
+
+**General description:**
+Personal Dictionary is an extension that allows you to save and organize definitions of words or terms that you commonly use in your work or studies. Ideal for teams that handle specific terminology or for students who need to remember key concepts.
+
+**Main features:**
+- Save terms with their custom definitions
+- Quick search and word autocompletion
+- Tag system to categorize and filter terms (#programming, #abbreviation, etc.)
+- Recent search history
+- Export and import in JSON, CSV, and TXT formats
+- Intuitive and modern interface
+
+**What's new in version 2.0:**
+- Complete tag system with autocompletion
+- Word filtering by tags
+- Improved and more intuitive interface
+- Unified search and autocompletion
+- Export in multiple formats (JSON, CSV, TXT)
+- Recent search history
+
+**Basic usage:**
+- To open the extension, press Ctrl+Q (Windows and macOS)
+- Type a term and its definition, add tags with the # symbol, and save it
+- Filter and organize your terms using tags
+- Export your dictionary to share it with your team
+
+---
+
+## PORTUGUÊS
+
+**Descrição breve:**
+Um dicionário pessoal para seus termos de trabalho e estudo.
+
+**Descrição geral:**
+Dicionário Pessoal é uma extensão que permite salvar e organizar definições de palavras ou termos que você utiliza habitualmente em seu trabalho ou estudos. Ideal para equipes que lidam com terminologia específica ou para estudantes que precisam lembrar conceitos-chave.
+
+**Características principais:**
+- Salve termos com suas definições personalizadas
+- Busca rápida e autocompletar de palavras
+- Sistema de etiquetas para categorizar e filtrar termos (#programacao, #abreviatura, etc.)
+- Histórico de buscas recentes
+- Exportação e importação em formatos JSON, CSV e TXT
+- Interface intuitiva e moderna
+
+**Novidades na versão 2.0:**
+- Sistema completo de etiquetas com autocompletar
+- Filtragem de palavras por etiquetas
+- Interface melhorada e mais intuitiva
+- Busca unificada e autocompletar
+- Exportação em múltiplos formatos (JSON, CSV, TXT)
+- Histórico de buscas recentes
+
+**Uso básico:**
+- Para abrir a extensão, pressione Ctrl+Q (Windows e macOS)
+- Digite um termo e sua definição, adicione etiquetas com o símbolo # e salve
+- Filtre e organize seus termos usando etiquetas
+- Exporte seu dicionário para compartilhá-lo com sua equipe 

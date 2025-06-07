@@ -30,11 +30,5 @@
         "mac": "MacCtrl+Q"
       }
     }
-  },
-  "theme": {
-    "colors": {
-      "frame": "#0e1339",
-      "toolbar": "#111a42"
-    }
   }
 }
