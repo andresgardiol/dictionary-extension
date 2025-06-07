@@ -1,6 +1,6 @@
 # Bugs
 
-## Corregidos
+# Corregidos
 
 1. ✅ **[CORREGIDO]** Al hacer click en la sección de "Etiquetas" que muestran las etiquetas existentes de la definición, no debería agregarla a la definición duplicandola, a lo sumo debería llevanos a la pestaña de palabras filtrando por esa etiqueta.
    - *Fecha de corrección*: Actualizado para redirigir a la pestaña de palabras con el filtro aplicado.

@@ -175,11 +175,17 @@ button svg {
 }
 
 .secondary {
-    background: var(--blue-gradient);
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.25);
+    transition: all 0.2s ease;
 }
 
 .secondary:hover {
-    box-shadow: 0 6px 16px rgba(64, 150, 255, 0.3);
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    box-shadow: 0 6px 16px rgba(66, 153, 225, 0.35);
+    transform: translateY(-1px);
 }
 
 .warning {
@@ -344,30 +350,97 @@ button svg {
     position: absolute;
     bottom: 100%;
     left: 0;
-    margin-bottom: 8px;
-    background-color: var(--card-bg);
-    min-width: 140px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    border-radius: 12px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #4a5568 0%, #3a4553 100%);
+    min-width: 160px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+    border-radius: 14px;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    animation: dropdownSlideIn 0.25s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .dropdown-content a {
-    color: var(--text-white);
-    padding: 0.8rem 1rem;
+    color: #f7fafc;
+    padding: 1rem 1.2rem;
     text-decoration: none;
-    display: block;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
 }
 
 .dropdown-content a:hover {
-    background-color: rgba(174, 68, 240, 0.2);
+    background: linear-gradient(135deg, rgba(174, 68, 240, 0.25) 0%, rgba(123, 44, 191, 0.25) 100%);
+    color: #ffffff;
+    transform: translateX(4px);
+    box-shadow: inset 4px 0 0 var(--accent-purple);
+}
+
+/* Añadir iconos mejorados a cada opción */
+.dropdown-content a::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 10px;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.dropdown-content a:hover::before {
+    opacity: 1;
+    background: var(--accent-purple);
+    box-shadow: 0 0 8px rgba(174, 68, 240, 0.5);
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+/* Estilo especial para el botón cuando el dropdown está activo */
+.dropdown:hover > button {
+    background: linear-gradient(135deg, #2c5aa0 0%, #2a4a87 100%);
+    box-shadow: 0 8px 20px rgba(66, 153, 225, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Añadir una pequeña flecha indicadora */
+.dropdown > button::after {
+    content: '▼';
+    margin-left: 8px;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.dropdown:hover > button::after {
+    opacity: 1;
+    transform: rotate(180deg);
 }
 
 /* Tabs styles */
@@ -929,4 +1002,34 @@ button svg {
 #form {
     position: relative;
     padding: 1rem;
+}
+
+/* Efecto sutil de indicación para botones con dropdown */
+.dropdown > button {
+    position: relative;
+}
+
+.dropdown > button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.3) 0%, rgba(49, 130, 206, 0.3) 100%);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    animation: buttonGlow 3s ease-in-out infinite;
+}
+
+@keyframes buttonGlow {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.3;
+        transform: scale(1.02);
+    }
 }
