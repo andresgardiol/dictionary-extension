@@ -777,167 +777,7 @@ document.getElementById('export-txt').addEventListener('click', (event) => {
 	});
 });
 
-// Importar desde JSON
-document.getElementById('import-json').addEventListener('click', async (event) => {
-	event.preventDefault();
-	try {
-		const json = await navigator.clipboard.readText();
-		if (!json) {
-			showNotification('No data in clipboard', 'error');
-			return;
-		}
-		
-		const data = JSON.parse(json);
-		if (typeof data !== 'object' || data === null) {
-			showNotification('Invalid JSON format', 'error');
-			return;
-		}
-		
-		// Usar merge inteligente
-		const result = await handleIntelligentMerge(data, 'json');
-		
-		if (result.success) {
-			showNotification(result.message, 'success');
-			
-			// Actualizar la lista de palabras si está visible
-			if (document.getElementById('wordlist-tab').classList.contains('active')) {
-				loadWordsList();
-			}
-		} else {
-			showNotification(result.message, 'info');
-		}
-	} catch (err) {
-		console.log('Error parsing JSON data', err);
-		showNotification('Error importing JSON data', 'error');
-	}
-});
-
-// Importar desde CSV
-document.getElementById('import-csv').addEventListener('click', async (event) => {
-	event.preventDefault();
-	try {
-		const csvText = await navigator.clipboard.readText();
-		if (!csvText) {
-			showNotification('No data in clipboard', 'error');
-			return;
-		}
-		
-		const lines = csvText.split('\n');
-		const data = {};
-		let count = 0;
-		
-		// Empezar desde la segunda línea para omitir encabezados
-		for (let i = 1; i < lines.length; i++) {
-			if (!lines[i].trim()) continue;
-			
-			// Lógica para manejar correctamente comas dentro de campos con comillas
-			let parts = [];
-			let currentPart = '';
-			let inQuotes = false;
-			
-			for (let char of lines[i]) {
-				if (char === '"') {
-					inQuotes = !inQuotes;
-				} else if (char === ',' && !inQuotes) {
-					parts.push(currentPart);
-					currentPart = '';
-				} else {
-					currentPart += char;
-				}
-			}
-			
-			if (currentPart) {
-				parts.push(currentPart);
-			}
-			
-			if (parts.length >= 2) {
-				const word = parts[0].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
-				const definition = parts[1].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
-				
-				if (word && definition) {
-					data[word] = definition;
-					count++;
-				}
-			}
-		}
-		
-		if (count === 0) {
-			showNotification('No valid data found in CSV', 'error');
-			return;
-		}
-		
-		// Usar merge inteligente
-		const result = await handleIntelligentMerge(data, 'csv');
-		
-		if (result.success) {
-			showNotification(result.message, 'success');
-			
-			// Actualizar la lista de palabras si está visible
-			if (document.getElementById('wordlist-tab').classList.contains('active')) {
-				loadWordsList();
-			}
-		} else {
-			showNotification(result.message, 'info');
-		}
-	} catch (err) {
-		console.log('Error parsing CSV data', err);
-		showNotification('Error importing CSV data', 'error');
-	}
-});
-
-// Importar desde TXT
-document.getElementById('import-txt').addEventListener('click', async (event) => {
-	event.preventDefault();
-	try {
-		const txtText = await navigator.clipboard.readText();
-		if (!txtText) {
-			showNotification('No data in clipboard', 'error');
-			return;
-		}
-		
-		// Formato esperado: Palabra\nDefinición\n\n
-		const entries = txtText.split('\n\n');
-		const data = {};
-		let count = 0;
-		
-		for (const entry of entries) {
-			if (!entry.trim()) continue;
-			
-			const lines = entry.split('\n');
-			if (lines.length >= 2) {
-				const word = lines[0].trim();
-				const definition = lines.slice(1).join('\n').trim();
-				
-				if (word && definition) {
-					data[word] = definition;
-					count++;
-				}
-			}
-		}
-		
-		if (count === 0) {
-			showNotification('No valid data found in TXT', 'error');
-			return;
-		}
-		
-		// Usar merge inteligente
-		const result = await handleIntelligentMerge(data, 'txt');
-		
-		if (result.success) {
-			showNotification(result.message, 'success');
-			
-			// Actualizar la lista de palabras si está visible
-			if (document.getElementById('wordlist-tab').classList.contains('active')) {
-				loadWordsList();
-			}
-		} else {
-			showNotification(result.message, 'info');
-		}
-	} catch (err) {
-		console.log('Error parsing TXT data', err);
-		showNotification('Error importing TXT data', 'error');
-	}
-});
+// Los botones específicos de formato ya no son necesarios porque ahora usamos detección automática
 
 // Botón de exportación tradicional (solo JSON)
 const exportButton = document.getElementById('export');
@@ -946,11 +786,28 @@ exportButton.addEventListener('click', (event) => {
 	document.getElementById('export-json').click();
 });
 
-// Botón de importación tradicional (solo JSON)
+// Botón de importación con detección automática
 const importButton = document.getElementById('import');
 importButton.addEventListener('click', async (event) => {
-	// Redirigir al import-json para mantener compatibilidad
-	document.getElementById('import-json').click();
+	event.preventDefault();
+	try {
+		const clipboardData = await navigator.clipboard.readText();
+		if (!clipboardData) {
+			showNotification('No hay datos en el clipboard', 'error');
+			return;
+		}
+		
+		console.log('Iniciando importación con detección automática...');
+		const result = await processAutoImport(clipboardData);
+		
+		if (!result.success && result.message) {
+			// Ya se mostró la notificación en processAutoImport, no mostrar otra
+			console.log('Importación fallida:', result.message);
+		}
+	} catch (err) {
+		console.error('Error accediendo al clipboard:', err);
+		showNotification('Error accediendo al clipboard. Asegúrate de tener datos copiados.', 'error');
+	}
 });
 
 const deleteButton = document.getElementById('delete');
@@ -1593,6 +1450,15 @@ async function showMergeModal(conflicts, newWords, importedData, format) {
 			const strategy = strategyRadio.value;
 			console.log('Estrategia seleccionada:', strategy);
 			
+			// Confirmación adicional para operaciones críticas
+			const confirmationMessage = getConfirmationMessage(strategy, conflicts.length, newWords.length);
+			const userConfirmed = confirm(confirmationMessage);
+			
+			if (!userConfirmed) {
+				console.log('Usuario canceló la confirmación');
+				return; // No cerrar el modal, permitir que el usuario reconsidere
+			}
+			
 			cleanup();
 			
 			try {
@@ -1711,6 +1577,215 @@ async function performDirectImport(importedData, format) {
 function truncateText(text, maxLength) {
 	if (text.length <= maxLength) return text;
 	return text.substring(0, maxLength) + '...';
+}
+
+// Función para generar mensaje de confirmación específico según la estrategia
+function getConfirmationMessage(strategy, conflictsCount, newWordsCount) {
+	let baseMessage = `¿Estás seguro de que quieres proceder?\n\n`;
+	baseMessage += `• ${newWordsCount} palabras nuevas se agregarán\n`;
+	baseMessage += `• ${conflictsCount} conflictos serán procesados\n\n`;
+	
+	switch (strategy) {
+		case 'combine':
+			baseMessage += `Estrategia COMBINAR:\n`;
+			baseMessage += `Las definiciones existentes se mantendrán y las nuevas se agregarán debajo con una línea separadora.\n\n`;
+			baseMessage += `⚠️ Esto modificará permanentemente ${conflictsCount} definiciones existentes.`;
+			break;
+			
+		case 'replace':
+			baseMessage += `Estrategia REEMPLAZAR:\n`;
+			baseMessage += `Las definiciones existentes serán completamente sobrescritas con las nuevas.\n\n`;
+			baseMessage += `🚨 PELIGRO: Perderás permanentemente ${conflictsCount} definiciones existentes.`;
+			break;
+			
+		case 'skip':
+			baseMessage += `Estrategia MANTENER EXISTENTES:\n`;
+			baseMessage += `Solo se importarán las palabras nuevas. Los conflictos se ignorarán.\n\n`;
+			baseMessage += `ℹ️ Esta es la opción más segura - no se modificarán definiciones existentes.`;
+			break;
+	}
+	
+	baseMessage += `\n\n¿Continuar con la importación?`;
+	return baseMessage;
+}
+
+// Función para detectar automáticamente el formato de los datos
+function detectDataFormat(data) {
+	if (!data || !data.trim()) {
+		return { format: null, error: 'No hay datos en el clipboard' };
+	}
+	
+	// Intentar detectar JSON
+	try {
+		const parsed = JSON.parse(data);
+		if (typeof parsed === 'object' && parsed !== null) {
+			return { format: 'json', data: parsed };
+		}
+	} catch (e) {
+		// No es JSON válido, continuar con otras detecciones
+	}
+	
+	// Detectar CSV - buscar comas y estructura de líneas
+	const lines = data.split('\n').filter(line => line.trim());
+	if (lines.length >= 2) {
+		// Verificar si tiene estructura CSV (comas, posibles comillas)
+		const hasCommas = lines.every(line => line.includes(','));
+		const firstLineCommas = (lines[0].match(/,/g) || []).length;
+		const secondLineCommas = (lines[1].match(/,/g) || []).length;
+		
+		// Si las primeras líneas tienen el mismo número de comas, probablemente es CSV
+		if (hasCommas && firstLineCommas === secondLineCommas && firstLineCommas >= 1) {
+			return { format: 'csv', data: data };
+		}
+	}
+	
+	// Detectar formato TXT - Palabra\nDefinición\n\n
+	const entries = data.split('\n\n').filter(entry => entry.trim());
+	if (entries.length >= 1) {
+		const validTxtEntries = entries.filter(entry => {
+			const entryLines = entry.split('\n');
+			return entryLines.length >= 2 && entryLines[0].trim() && entryLines[1].trim();
+		});
+		
+		// Si al menos la mitad de las entradas tienen formato válido, considerarlo TXT
+		if (validTxtEntries.length >= Math.ceil(entries.length * 0.5)) {
+			return { format: 'txt', data: data };
+		}
+	}
+	
+	// Si llegamos aquí, no pudimos detectar el formato
+	return { 
+		format: null, 
+		error: 'No se pudo detectar el formato. Formatos soportados:\n• JSON: {"palabra": "definición"}\n• CSV: Palabra,Definición,Tags\n• TXT: Palabra\\nDefinición\\n\\n'
+	};
+}
+
+// Función para procesar importación con detección automática
+async function processAutoImport(data) {
+	const detection = detectDataFormat(data);
+	
+	if (!detection.format) {
+		showNotification(detection.error, 'error');
+		return { success: false, message: detection.error };
+	}
+	
+	console.log(`Formato detectado: ${detection.format.toUpperCase()}`);
+	
+	// Procesar según el formato detectado
+	let importedData = {};
+	
+	try {
+		switch (detection.format) {
+			case 'json':
+				importedData = detection.data;
+				break;
+				
+			case 'csv':
+				importedData = await parseCSVData(detection.data);
+				break;
+				
+			case 'txt':
+				importedData = await parseTXTData(detection.data);
+				break;
+		}
+		
+		// Usar merge inteligente
+		const result = await handleIntelligentMerge(importedData, detection.format);
+		
+		if (result.success) {
+			showNotification(`${result.message} (Formato: ${detection.format.toUpperCase()})`, 'success');
+			
+			// Actualizar la lista de palabras si está visible
+			if (document.getElementById('wordlist-tab').classList.contains('active')) {
+				loadWordsList();
+			}
+		}
+		
+		return result;
+		
+	} catch (error) {
+		console.error('Error procesando datos:', error);
+		const errorMessage = `Error procesando datos ${detection.format.toUpperCase()}: ${error.message}`;
+		showNotification(errorMessage, 'error');
+		return { success: false, message: errorMessage };
+	}
+}
+
+// Función auxiliar para parsear CSV
+async function parseCSVData(csvText) {
+	const lines = csvText.split('\n');
+	const data = {};
+	let count = 0;
+	
+	// Empezar desde la segunda línea para omitir encabezados
+	for (let i = 1; i < lines.length; i++) {
+		if (!lines[i].trim()) continue;
+		
+		// Lógica para manejar correctamente comas dentro de campos con comillas
+		let parts = [];
+		let currentPart = '';
+		let inQuotes = false;
+		
+		for (let char of lines[i]) {
+			if (char === '"') {
+				inQuotes = !inQuotes;
+			} else if (char === ',' && !inQuotes) {
+				parts.push(currentPart);
+				currentPart = '';
+			} else {
+				currentPart += char;
+			}
+		}
+		
+		if (currentPart) {
+			parts.push(currentPart);
+		}
+		
+		if (parts.length >= 2) {
+			const word = parts[0].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+			const definition = parts[1].replace(/^"|"$/g, '').replace(/""/g, '"').trim();
+			
+			if (word && definition) {
+				data[word] = definition;
+				count++;
+			}
+		}
+	}
+	
+	if (count === 0) {
+		throw new Error('No se encontraron datos válidos en el CSV');
+	}
+	
+	return data;
+}
+
+// Función auxiliar para parsear TXT
+async function parseTXTData(txtText) {
+	// Formato esperado: Palabra\nDefinición\n\n
+	const entries = txtText.split('\n\n');
+	const data = {};
+	let count = 0;
+	
+	for (const entry of entries) {
+		if (!entry.trim()) continue;
+		
+		const lines = entry.split('\n');
+		if (lines.length >= 2) {
+			const word = lines[0].trim();
+			const definition = lines.slice(1).join('\n').trim();
+			
+			if (word && definition) {
+				data[word] = definition;
+				count++;
+			}
+		}
+	}
+	
+	if (count === 0) {
+		throw new Error('No se encontraron datos válidos en el formato TXT');
+	}
+	
+	return data;
 }
 
 // Función de prueba para el modal (solo para debug)

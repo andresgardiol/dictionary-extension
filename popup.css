@@ -1114,6 +1114,47 @@ button svg {
     min-height: 0;
 }
 
+/* Advertencia de operación irreversible */
+.merge-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { 
+        background: rgba(255, 193, 7, 0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+    50% { 
+        background: rgba(255, 193, 7, 0.15);
+        border-color: rgba(255, 193, 7, 0.4);
+    }
+}
+
+.warning-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.warning-text {
+    color: #ffc107;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.warning-text strong {
+    color: #ffeb3b;
+    font-weight: 600;
+}
+
 .merge-summary {
     margin-bottom: 1.5rem;
 }
@@ -1234,8 +1275,9 @@ button svg {
 .modal-footer {
     padding: 1.5rem 2rem;
     display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
+    gap: 1.2rem;
+    justify-content: space-between; /* Separar más los botones para mejor claridad */
+    align-items: center;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
@@ -1244,40 +1286,99 @@ button svg {
 
 .modal-footer button {
     margin: 0;
-    padding: 0.8rem 1.5rem;
-    font-weight: 600;
-    min-width: 120px;
+    padding: 0.9rem 1.8rem;
+    font-weight: 500;
+    min-width: 130px;
     white-space: nowrap;
     z-index: 2001;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    gap: 0.5rem; /* Espacio entre icono y texto */
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
 }
 
-/* Asegurar que los botones del modal tengan los colores correctos */
-#merge-cancel {
-    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Botón de acción segura (Cancelar) */
+.safe-action {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+    color: white !important;
+    border: 1px solid rgba(100, 116, 139, 0.3) !important;
+    position: relative;
+    transform: scale(0.95); /* Ligeramente más pequeño para mostrar menor importancia */
 }
 
-#merge-cancel:hover {
-    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
-    transform: translateY(-1px);
+.safe-action:hover {
+    background: linear-gradient(135deg, #475569 0%, #334155 100%) !important;
+    transform: scale(0.95) translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3) !important;
 }
 
-#merge-proceed {
-    background: var(--purple-gradient);
-    color: white;
+.safe-action svg {
+    opacity: 0.8;
 }
 
-#merge-proceed:hover {
-    box-shadow: 0 6px 16px rgba(174, 68, 240, 0.3);
-    transform: translateY(-1px);
+/* Botón de acción destructiva (Importar) */
+.destructive-action {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    color: white !important;
+    border: 2px solid rgba(220, 38, 38, 0.4) !important;
+    box-shadow: 
+        0 0 0 3px rgba(220, 38, 38, 0.2),
+        0 4px 15px rgba(220, 38, 38, 0.3) !important;
+    animation: destructiveGlow 2s ease-in-out infinite;
+    position: relative;
+    transform: scale(1.05); /* Ligeramente más grande para mostrar importancia */
+    font-weight: 600 !important;
+}
+
+.destructive-action svg {
+    animation: warningPulse 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
+}
+
+.destructive-action:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+    box-shadow: 
+        0 0 0 4px rgba(220, 38, 38, 0.3),
+        0 8px 25px rgba(220, 38, 38, 0.5) !important;
+    transform: scale(1.08) translateY(-2px) !important;
+    border-color: rgba(220, 38, 38, 0.6) !important;
+}
+
+.destructive-action:active {
+    transform: scale(1.03) translateY(0) !important;
+    box-shadow: 
+        0 0 0 2px rgba(220, 38, 38, 0.4),
+        0 2px 8px rgba(220, 38, 38, 0.4) !important;
+}
+
+/* Animaciones para el botón destructivo */
+@keyframes destructiveGlow {
+    0%, 100% {
+        box-shadow: 
+            0 0 0 3px rgba(220, 38, 38, 0.2),
+            0 4px 15px rgba(220, 38, 38, 0.3);
+    }
+    50% {
+        box-shadow: 
+            0 0 0 5px rgba(220, 38, 38, 0.3),
+            0 6px 20px rgba(220, 38, 38, 0.4);
+    }
+}
+
+@keyframes warningPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
 }
 
 /* Botón de cerrar modal */
