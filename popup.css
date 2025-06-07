@@ -1033,3 +1033,283 @@ button svg {
         transform: scale(1.02);
     }
 }
+
+/* Modal styles para merge inteligente */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.modal.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border-radius: 16px;
+    padding: 0;
+    width: 90%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.6),
+        0 10px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    padding: 2rem 2rem 1rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(174, 68, 240, 0.1) 0%, rgba(123, 44, 191, 0.1) 100%);
+}
+
+.modal-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.modal-header p {
+    margin: 0;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.modal-body {
+    padding: 1.5rem 2rem;
+    max-height: 45vh;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.merge-summary {
+    margin-bottom: 1.5rem;
+}
+
+.merge-stats {
+    background: rgba(174, 68, 240, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-white);
+    border: 1px solid rgba(174, 68, 240, 0.2);
+}
+
+.merge-actions {
+    margin-bottom: 1.5rem;
+}
+
+.merge-action-item {
+    margin-bottom: 1rem;
+}
+
+.merge-action-item:last-child {
+    margin-bottom: 0;
+}
+
+.merge-action-item input[type="radio"] {
+    display: none;
+}
+
+.merge-action-item label {
+    display: block;
+    cursor: pointer;
+    padding: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.merge-action-item label:hover {
+    border-color: rgba(174, 68, 240, 0.3);
+    background: rgba(174, 68, 240, 0.08);
+}
+
+.merge-action-item input[type="radio"]:checked + label {
+    border-color: var(--accent-purple);
+    background: rgba(174, 68, 240, 0.15);
+    box-shadow: 0 0 0 2px rgba(174, 68, 240, 0.2);
+}
+
+.merge-option strong {
+    display: block;
+    color: var(--text-white);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+.merge-option small {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.conflicts-preview h4 {
+    color: var(--text-white);
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.conflicts-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.conflict-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-item:last-child {
+    border-bottom: none;
+}
+
+.conflict-word {
+    font-weight: 600;
+    color: var(--accent-purple);
+    margin-bottom: 0.5rem;
+}
+
+.conflict-definitions {
+    font-size: 0.85rem;
+}
+
+.definition-existing {
+    color: var(--text-gray);
+    margin-bottom: 0.3rem;
+}
+
+.definition-new {
+    color: #68d391;
+}
+
+.definition-existing::before {
+    content: "📝 Actual: ";
+    font-weight: 600;
+}
+
+.definition-new::before {
+    content: "🆕 Nueva: ";
+    font-weight: 600;
+}
+
+.modal-footer {
+    padding: 1.5rem 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    min-height: auto;
+}
+
+.modal-footer button {
+    margin: 0;
+    padding: 0.8rem 1.5rem;
+    font-weight: 600;
+    min-width: 120px;
+    white-space: nowrap;
+    z-index: 2001;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Asegurar que los botones del modal tengan los colores correctos */
+#merge-cancel {
+    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#merge-cancel:hover {
+    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    transform: translateY(-1px);
+}
+
+#merge-proceed {
+    background: var(--purple-gradient);
+    color: white;
+}
+
+#merge-proceed:hover {
+    box-shadow: 0 6px 16px rgba(174, 68, 240, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Botón de cerrar modal */
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-gray);
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 2002;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: rgba(255, 79, 86, 0.2);
+    color: var(--red);
+    transform: scale(1.1);
+}
+
+.modal-close:active {
+    transform: scale(0.95);
+}

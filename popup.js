@@ -27,6 +27,10 @@ let isWritingTag = false;
 let isSearchMode = false;
 let debounceTimer = null;
 
+// Variables globales para el merge
+let pendingMergeData = null;
+let currentMergeFormat = null;
+
 // Función para cargar y mostrar la lista de palabras
 const loadWordsList = async (filter = '', tagFilter = null) => {
 	const data = await loadData();
@@ -789,15 +793,18 @@ document.getElementById('import-json').addEventListener('click', async (event) =
 			return;
 		}
 		
-		const oldData = await loadData();
-		const newData = {...oldData, ...data};
+		// Usar merge inteligente
+		const result = await handleIntelligentMerge(data, 'json');
 		
-		await saveData(newData);
-		showNotification(`${Object.keys(data).length} words imported successfully`, 'success');
-		
-		// Actualizar la lista de palabras si está visible
-		if (document.getElementById('wordlist-tab').classList.contains('active')) {
-			loadWordsList();
+		if (result.success) {
+			showNotification(result.message, 'success');
+			
+			// Actualizar la lista de palabras si está visible
+			if (document.getElementById('wordlist-tab').classList.contains('active')) {
+				loadWordsList();
+			}
+		} else {
+			showNotification(result.message, 'info');
 		}
 	} catch (err) {
 		console.log('Error parsing JSON data', err);
@@ -859,15 +866,18 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 			return;
 		}
 		
-		const oldData = await loadData();
-		const newData = {...oldData, ...data};
+		// Usar merge inteligente
+		const result = await handleIntelligentMerge(data, 'csv');
 		
-		await saveData(newData);
-		showNotification(`${count} words imported from CSV`, 'success');
-		
-		// Actualizar la lista de palabras si está visible
-		if (document.getElementById('wordlist-tab').classList.contains('active')) {
-			loadWordsList();
+		if (result.success) {
+			showNotification(result.message, 'success');
+			
+			// Actualizar la lista de palabras si está visible
+			if (document.getElementById('wordlist-tab').classList.contains('active')) {
+				loadWordsList();
+			}
+		} else {
+			showNotification(result.message, 'info');
 		}
 	} catch (err) {
 		console.log('Error parsing CSV data', err);
@@ -910,15 +920,18 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 			return;
 		}
 		
-		const oldData = await loadData();
-		const newData = {...oldData, ...data};
+		// Usar merge inteligente
+		const result = await handleIntelligentMerge(data, 'txt');
 		
-		await saveData(newData);
-		showNotification(`${count} words imported from TXT`, 'success');
-		
-		// Actualizar la lista de palabras si está visible
-		if (document.getElementById('wordlist-tab').classList.contains('active')) {
-			loadWordsList();
+		if (result.success) {
+			showNotification(result.message, 'success');
+			
+			// Actualizar la lista de palabras si está visible
+			if (document.getElementById('wordlist-tab').classList.contains('active')) {
+				loadWordsList();
+			}
+		} else {
+			showNotification(result.message, 'info');
 		}
 	} catch (err) {
 		console.log('Error parsing TXT data', err);
@@ -1437,3 +1450,316 @@ const updateOriginalValues = () => {
 	// Quitar indicador de cambios
 	form.classList.remove('has-changes');
 };
+
+// Función principal para manejar merge inteligente
+async function handleIntelligentMerge(importedData, format) {
+	const existingData = await loadData();
+	const conflicts = [];
+	const newWords = [];
+	
+	// Analizar conflictos y palabras nuevas
+	for (const [word, definition] of Object.entries(importedData)) {
+		if (existingData[word]) {
+			conflicts.push({
+				word: word,
+				existing: getWordDefinition(existingData[word]),
+				new: getWordDefinition(definition)
+			});
+		} else {
+			newWords.push(word);
+		}
+	}
+	
+	// Si no hay conflictos, importar directamente
+	if (conflicts.length === 0) {
+		return await performDirectImport(importedData, format);
+	}
+	
+	// Mostrar modal de conflictos
+	return await showMergeModal(conflicts, newWords, importedData, format);
+}
+
+// Obtener definición de una palabra (compatible con ambos formatos)
+function getWordDefinition(wordData) {
+	if (typeof wordData === 'string') {
+		return wordData;
+	} else if (typeof wordData === 'object' && wordData !== null && wordData.definition) {
+		return wordData.definition;
+	}
+	return String(wordData || '');
+}
+
+// Mostrar modal de merge
+async function showMergeModal(conflicts, newWords, importedData, format) {
+	return new Promise((resolve) => {
+		console.log('Iniciando showMergeModal...');
+		
+		const modal = document.getElementById('merge-modal');
+		const conflictsCountEl = document.getElementById('conflicts-count');
+		const newWordsCountEl = document.getElementById('new-words-count');
+		const conflictsListEl = document.getElementById('conflicts-list');
+		
+		if (!modal) {
+			console.error('Modal no encontrado');
+			resolve({ success: false, message: 'Error: Modal no encontrado' });
+			return;
+		}
+		
+		// Actualizar estadísticas
+		if (conflictsCountEl) conflictsCountEl.textContent = conflicts.length;
+		if (newWordsCountEl) newWordsCountEl.textContent = newWords.length;
+		
+		// Mostrar conflictos
+		if (conflictsListEl) {
+			conflictsListEl.innerHTML = '';
+			conflicts.forEach(conflict => {
+				const conflictEl = document.createElement('div');
+				conflictEl.className = 'conflict-item';
+				conflictEl.innerHTML = `
+					<div class="conflict-word">${conflict.word}</div>
+					<div class="conflict-definitions">
+						<div class="definition-existing">${truncateText(conflict.existing, 60)}</div>
+						<div class="definition-new">${truncateText(conflict.new, 60)}</div>
+					</div>
+				`;
+				conflictsListEl.appendChild(conflictEl);
+			});
+		}
+		
+		// Guardar datos para procesamiento posterior
+		pendingMergeData = { conflicts, newWords, importedData, format };
+		
+		// Buscar botones antes de mostrar el modal
+		const cancelBtn = document.getElementById('merge-cancel');
+		const proceedBtn = document.getElementById('merge-proceed');
+		const closeBtn = document.getElementById('merge-close');
+		
+		console.log('Botones encontrados:', { cancelBtn: !!cancelBtn, proceedBtn: !!proceedBtn, closeBtn: !!closeBtn });
+		
+		// Verificar que los botones existen
+		if (!cancelBtn || !proceedBtn || !closeBtn) {
+			console.error('No se pudieron encontrar los botones del modal');
+			console.error('Cancel button:', cancelBtn);
+			console.error('Proceed button:', proceedBtn);
+			console.error('Close button:', closeBtn);
+			resolve({ success: false, message: 'Error interno: botones no encontrados' });
+			return;
+		}
+		
+		// Función para limpiar event listeners
+		const cleanup = () => {
+			console.log('Limpiando modal...');
+			modal.classList.add('hidden');
+			pendingMergeData = null;
+			
+			// Remover event listeners con clones para evitar problemas
+			const newCancelBtn = cancelBtn.cloneNode(true);
+			const newProceedBtn = proceedBtn.cloneNode(true);
+			const newCloseBtn = closeBtn.cloneNode(true);
+			cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+			proceedBtn.parentNode.replaceChild(newProceedBtn, proceedBtn);
+			closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+			
+			// Remover otros listeners
+			document.removeEventListener('keydown', handleKeyPress);
+		};
+		
+		// Función para manejar cancelación
+		const handleCancel = (e) => {
+			console.log('Cancelando merge...');
+			if (e) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+			cleanup();
+			resolve({ success: false, message: 'Importación cancelada' });
+		};
+		
+		// Función para proceder
+		const handleProceed = async (e) => {
+			console.log('Procediendo con merge...');
+			if (e) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+			
+			const strategyRadio = document.querySelector('input[name="merge-strategy"]:checked');
+			if (!strategyRadio) {
+				console.error('No se seleccionó ninguna estrategia');
+				showNotification('Por favor selecciona una estrategia', 'error');
+				return;
+			}
+			
+			const strategy = strategyRadio.value;
+			console.log('Estrategia seleccionada:', strategy);
+			
+			cleanup();
+			
+			try {
+				const result = await processMerge(conflicts, newWords, importedData, strategy, format);
+				resolve(result);
+			} catch (error) {
+				console.error('Error durante el procesamiento:', error);
+				resolve({ success: false, message: 'Error durante el merge: ' + error.message });
+			}
+		};
+		
+		// Función para manejar tecla ESC
+		const handleKeyPress = (e) => {
+			if (e.key === 'Escape') {
+				handleCancel();
+			}
+		};
+		
+		// Función para manejar click en backdrop
+		const handleBackdropClick = (e) => {
+			if (e.target === modal) {
+				handleCancel();
+			}
+		};
+		
+		// Agregar event listeners
+		console.log('Agregando event listeners...');
+		cancelBtn.addEventListener('click', handleCancel);
+		proceedBtn.addEventListener('click', handleProceed);
+		closeBtn.addEventListener('click', handleCancel); // El botón X funciona igual que cancelar
+		modal.addEventListener('click', handleBackdropClick);
+		document.addEventListener('keydown', handleKeyPress);
+		
+		// Mostrar modal al final
+		console.log('Mostrando modal...');
+		modal.classList.remove('hidden');
+		
+		console.log('Modal configurado completamente');
+	});
+}
+
+// Procesar merge según estrategia seleccionada
+async function processMerge(conflicts, newWords, importedData, strategy, format) {
+	const existingData = await loadData();
+	let processedCount = 0;
+	let skippedCount = 0;
+	
+	// Procesar palabras nuevas (siempre se importan)
+	for (const word of newWords) {
+		existingData[word] = importedData[word];
+		processedCount++;
+	}
+	
+	// Procesar conflictos según estrategia
+	for (const conflict of conflicts) {
+		const word = conflict.word;
+		const existingDefinition = conflict.existing;
+		const newDefinition = conflict.new;
+		
+		switch (strategy) {
+			case 'combine':
+				// Combinar: existente arriba, nueva abajo
+				const combinedDefinition = `${existingDefinition}\n\n---\n\n${newDefinition}`;
+				existingData[word] = typeof existingData[word] === 'object' 
+					? { ...existingData[word], definition: combinedDefinition }
+					: combinedDefinition;
+				processedCount++;
+				break;
+				
+			case 'replace':
+				// Reemplazar con nueva definición
+				existingData[word] = importedData[word];
+				processedCount++;
+				break;
+				
+			case 'skip':
+				// Mantener existente, no hacer nada
+				skippedCount++;
+				break;
+		}
+	}
+	
+	// Guardar datos actualizados
+	await saveData(existingData);
+	
+	// Preparar mensaje de resultado
+	let message = `${processedCount} palabras procesadas`;
+	if (skippedCount > 0) {
+		message += `, ${skippedCount} conflictos omitidos`;
+	}
+	
+	return {
+		success: true,
+		message: message,
+		processed: processedCount,
+		skipped: skippedCount
+	};
+}
+
+// Importación directa (sin conflictos)
+async function performDirectImport(importedData, format) {
+	const existingData = await loadData();
+	const mergedData = { ...existingData, ...importedData };
+	
+	await saveData(mergedData);
+	
+	return {
+		success: true,
+		message: `${Object.keys(importedData).length} palabras importadas`,
+		processed: Object.keys(importedData).length,
+		skipped: 0
+	};
+}
+
+// Función auxiliar para truncar texto
+function truncateText(text, maxLength) {
+	if (text.length <= maxLength) return text;
+	return text.substring(0, maxLength) + '...';
+}
+
+// Función de prueba para el modal (solo para debug)
+window.testMergeModal = function() {
+	console.log('Iniciando prueba del modal...');
+	
+	// Verificar que el modal existe antes de la prueba
+	const modal = document.getElementById('merge-modal');
+	console.log('Modal element:', modal);
+	
+	// Verificar botones
+	const cancelBtn = document.getElementById('merge-cancel');
+	const proceedBtn = document.getElementById('merge-proceed');
+	const closeBtn = document.getElementById('merge-close');
+	console.log('Buttons found:', { cancel: !!cancelBtn, proceed: !!proceedBtn, close: !!closeBtn });
+	
+	if (!modal || !cancelBtn || !proceedBtn || !closeBtn) {
+		console.error('Modal o botones no encontrados');
+		return;
+	}
+	
+	const testConflicts = [
+		{
+			word: 'test',
+			existing: 'Definición existente para prueba',
+			new: 'Nueva definición importada'
+		}
+	];
+	const testNewWords = ['nueva1', 'nueva2'];
+	const testData = { test: 'nueva def', nueva1: 'def1', nueva2: 'def2' };
+	
+	showMergeModal(testConflicts, testNewWords, testData, 'json')
+		.then(result => {
+			console.log('Resultado del modal:', result);
+		})
+		.catch(error => {
+			console.error('Error en modal:', error);
+		});
+};
+
+// Función simple para mostrar el modal sin lógica
+window.showModalSimple = function() {
+	const modal = document.getElementById('merge-modal');
+	if (modal) {
+		modal.classList.remove('hidden');
+		console.log('Modal mostrado directamente');
+	} else {
+		console.error('Modal no encontrado');
+	}
+};
+
+console.log('Modal test functions loaded. Run window.testMergeModal() or window.showModalSimple() to test.');

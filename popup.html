@@ -15,6 +15,70 @@
 	</button>
 </div>
 
+<!-- Modal para manejar conflictos de merge -->
+<div id="merge-modal" class="modal hidden">
+	<div class="modal-content">
+		<button id="merge-close" class="modal-close" title="Cerrar">×</button>
+		<div class="modal-header">
+			<h2>🔄 Conflictos de Importación</h2>
+			<p>Se encontraron palabras que ya existen. ¿Cómo quieres proceder?</p>
+		</div>
+		
+		<div class="modal-body">
+			<div class="merge-summary">
+				<div class="merge-stats">
+					<span id="new-words-count">0</span> palabras nuevas • 
+					<span id="conflicts-count">0</span> conflictos encontrados
+				</div>
+			</div>
+			
+			<div class="merge-actions">
+				<div class="merge-action-item">
+					<input type="radio" id="merge-combine" name="merge-strategy" value="combine" checked>
+					<label for="merge-combine">
+						<div class="merge-option">
+							<strong>🔗 Combinar definiciones</strong>
+							<small>Mantener la definición existente arriba y agregar la nueva abajo</small>
+						</div>
+					</label>
+				</div>
+				
+				<div class="merge-action-item">
+					<input type="radio" id="merge-replace" name="merge-strategy" value="replace">
+					<label for="merge-replace">
+						<div class="merge-option">
+							<strong>🔄 Reemplazar existentes</strong>
+							<small>Sobrescribir las definiciones existentes con las nuevas</small>
+						</div>
+					</label>
+				</div>
+				
+				<div class="merge-action-item">
+					<input type="radio" id="merge-skip" name="merge-strategy" value="skip">
+					<label for="merge-skip">
+						<div class="merge-option">
+							<strong>⏭️ Mantener existentes</strong>
+							<small>Solo importar palabras nuevas, ignorar conflictos</small>
+						</div>
+					</label>
+				</div>
+			</div>
+			
+			<div class="conflicts-preview">
+				<h4>Vista previa de conflictos:</h4>
+				<div id="conflicts-list" class="conflicts-container">
+					<!-- Los conflictos se mostrarán aquí dinámicamente -->
+				</div>
+			</div>
+		</div>
+		
+		<div class="modal-footer">
+			<button id="merge-cancel" class="secondary">Cancelar</button>
+			<button id="merge-proceed" class="primary">Importar</button>
+		</div>
+	</div>
+</div>
+
 <!-- Notifications container -->
 <div id="notification" class="notification hidden"></div>
 
@@ -49,7 +113,7 @@
 			</div>
 			
 			<button type="submit" id="save" class="primary full-width">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2 2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
 				Save
 			</button>
 			
