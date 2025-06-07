@@ -1,6 +1,6 @@
 const definitionTextArea = document.getElementById('definition');
 const notification = document.getElementById('notification');
-const searchInput = document.getElementById('search');
+const wordInput = document.getElementById('word');
 const searchResults = document.getElementById('search-results');
 const wordsList = document.getElementById('words-list');
 const wordlistFilter = document.getElementById('wordlist-filter');
@@ -227,8 +227,11 @@ form.addEventListener('submit', (event) => {
 	}
 });
 
-const wordInput = document.getElementById('word');
+// Implementación de la búsqueda y autocompletado unificados en el campo de palabra
 wordInput.addEventListener('input', (event) => {
+	const searchTerm = wordInput.value.toLowerCase().trim();
+	
+	// Buscar definición existente para autocompletar
 	loadData().then((data) => {
 		const inputOriginal = wordInput.value;
 		const inputLower = inputOriginal.toLowerCase();
@@ -244,19 +247,13 @@ wordInput.addEventListener('input', (event) => {
 		} else {
 			definitionTextArea.value = '';
 		}
-	});
-});
-
-// Implementación de la búsqueda
-searchInput.addEventListener('input', (event) => {
-	const searchTerm = searchInput.value.toLowerCase().trim();
-	
-	if (searchTerm.length < 2) {
-		searchResults.classList.add('hidden');
-		return;
-	}
-	
-	loadData().then((data) => {
+		
+		// Mostrar resultados de búsqueda si hay al menos 2 caracteres
+		if (searchTerm.length < 2) {
+			searchResults.classList.add('hidden');
+			return;
+		}
+		
 		const matchingWords = Object.keys(data).filter(word => 
 			word.toLowerCase().includes(searchTerm)
 		);
@@ -272,7 +269,6 @@ searchInput.addEventListener('input', (event) => {
 					wordInput.value = word;
 					definitionTextArea.value = data[word];
 					searchResults.classList.add('hidden');
-					searchInput.value = '';
 					addToHistory(word);
 				});
 				searchResults.appendChild(resultElement);
@@ -285,7 +281,7 @@ searchInput.addEventListener('input', (event) => {
 
 // Cerrar los resultados de búsqueda al hacer clic fuera
 document.addEventListener('click', (event) => {
-	if (!searchResults.contains(event.target) && event.target !== searchInput) {
+	if (!searchResults.contains(event.target) && event.target !== wordInput) {
 		searchResults.classList.add('hidden');
 	}
 });

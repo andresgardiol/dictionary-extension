@@ -23,6 +23,15 @@ body {
     line-height: 1.5;
 }
 
+/* Título y botón de eliminar */
+.title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0 1rem;
+}
+
 h1 {
     text-align: center;
     color: var(--text-white);
@@ -33,6 +42,13 @@ h1 {
     letter-spacing: -0.02em;
 }
 
+.title-container #delete {
+    position: absolute;
+    right: 1.2rem;
+    width: 32px;
+    height: 32px;
+}
+
 h3 {
     color: var(--text-white);
     font-weight: 500;
@@ -41,7 +57,12 @@ h3 {
 }
 
 #word {
-    margin: 0.5rem 0;
+    width: 100%;
+    padding-left: 2.5rem;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23b8b9c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: 1rem center;
+    background-size: 1rem;
 }
 
 /* Style input */
@@ -154,23 +175,19 @@ button svg {
     border-radius: 8px;
 }
 
-#delete {
-    float: right;
+/* Icon button style */
+.icon-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    margin: 0;
 }
 
 /* Styles for the search container */
 #search-container {
-    margin-bottom: 1rem;
     position: relative;
-}
-
-#search {
-    width: 100%;
-    padding-left: 2.5rem;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23b8b9c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
-    background-repeat: no-repeat;
-    background-position: 1rem center;
-    background-size: 1rem;
+    margin-bottom: 1rem;
 }
 
 #search-results {
@@ -238,8 +255,14 @@ button svg {
 .button-group {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     margin-top: 0.5rem;
+}
+
+.data-buttons {
+    display: flex;
+    gap: 0.8rem;
 }
 
 .dropdown {
