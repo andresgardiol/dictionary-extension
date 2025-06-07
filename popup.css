@@ -465,6 +465,13 @@ button svg {
     font-weight: 500;
 }
 
+/* Estilo para etiquetas duplicadas */
+.tag-duplicate {
+    color: var(--red);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
 .tags-section {
     margin-bottom: 1rem;
 }
@@ -618,4 +625,172 @@ button svg {
     font-size: 0.75rem;
     display: inline-block;
     margin-right: 0.2rem;
+}
+
+/* Estilos para las sugerencias de etiquetas */
+.tag-suggestions-container {
+    position: absolute;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    min-width: 150px;
+    max-width: 250px;
+    overflow: hidden;
+}
+
+.tag-suggestion {
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tag-suggestion:last-child {
+    border-bottom: none;
+}
+
+.tag-suggestion:hover {
+    background-color: rgba(50, 212, 224, 0.2);
+}
+
+.tag-suggestion.selected {
+    background-color: rgba(174, 68, 240, 0.2);
+}
+
+/* Estilos para el texto de ayuda de etiquetas */
+.tags-help {
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    display: flex;
+    align-items: center;
+}
+
+.tags-help-label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+    color: var(--accent-cyan);
+}
+
+.tags-help-text {
+    font-style: italic;
+    flex-grow: 1;
+}
+
+.tag-help-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-gray);
+    padding: 0.2rem;
+    box-shadow: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    transition: all 0.2s ease;
+}
+
+.tag-help-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--accent-cyan);
+}
+
+.available-tags {
+    margin-bottom: 1rem;
+    padding: 0.6rem;
+    border-radius: 8px;
+    background-color: rgba(50, 212, 224, 0.05);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.available-tags.hidden {
+    display: none;
+}
+
+.available-tag {
+    background-color: rgba(50, 212, 224, 0.15);
+    color: var(--accent-cyan);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.available-tag:hover {
+    background-color: rgba(50, 212, 224, 0.3);
+    transform: translateY(-1px);
+}
+
+.tag-highlight {
+    color: var(--accent-purple);
+    font-weight: bold;
+}
+
+.no-match-message {
+    width: 100%;
+    text-align: center;
+    color: var(--text-gray);
+    font-style: italic;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.tags-available-title {
+    width: 100%;
+    color: var(--text-gray);
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.no-tags-message {
+    width: 100%;
+    text-align: center;
+    color: var(--text-gray);
+    font-style: italic;
+    font-size: 0.8rem;
+}
+
+/* Estilos para las etiquetas existentes */
+.existing-tags {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.existing-tags.hidden {
+    display: none;
+}
+
+.existing-tags-label {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+}
+
+.existing-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.existing-tag {
+    background-color: rgba(64, 150, 255, 0.2);
+    color: var(--accent-blue);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 500;
 }

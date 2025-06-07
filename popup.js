@@ -10,6 +10,14 @@ const clearHistoryBtn = document.getElementById('clear-history');
 // Historial de búsquedas - máximo 10 elementos
 const MAX_HISTORY_ITEMS = 10;
 
+// Variables para el sistema de sugerencias de etiquetas
+let suggestionsActive = false;
+let currentTagStart = -1;
+let currentTagEnd = -1;
+let tagSuggestions = [];
+let selectedSuggestionIndex = -1;
+let isWritingTag = false;
+
 // Función para cargar y mostrar la lista de palabras
 const loadWordsList = async (filter = '', tagFilter = null) => {
 	const data = await loadData();
@@ -135,7 +143,19 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 			wordInput.value = word;
 			// Cargar la definición con formato apropiado
 			const wordData = loadWord(word, data);
-			definitionTextArea.value = wordData ? wordData.definition : '';
+			if (wordData) {
+				definitionTextArea.value = wordData.definition;
+				// Mostrar etiquetas existentes
+				showExistingTags(wordData.tags);
+				// Activar panel de etiquetas si hay # en la definición
+				if (wordData.definition.includes('#')) {
+					isWritingTag = true;
+					showAvailableTagsPanel().then(() => {
+						// Filtrar las etiquetas para ocultar las que ya están en uso
+						filterAvailableTags('');
+					});
+				}
+			}
 			switchTab('main');
 			addToHistory(word);
 		});
@@ -366,9 +386,21 @@ wordInput.addEventListener('input', (event) => {
 			const wordData = loadWord(match, data);
 			if (wordData) {
 				definitionTextArea.value = wordData.definition;
+				// Mostrar etiquetas existentes
+				showExistingTags(wordData.tags);
+				// Activar el panel de etiquetas disponibles si hay alguna
+				if (wordData.definition.includes('#')) {
+					isWritingTag = true;
+					showAvailableTagsPanel().then(() => {
+						// Filtrar las etiquetas para ocultar las que ya están en uso
+						filterAvailableTags('');
+					});
+				}
 			}
 		} else {
 			definitionTextArea.value = '';
+			// Limpiar etiquetas existentes
+			showExistingTags([]);
 		}
 		
 		// Mostrar resultados de búsqueda si hay al menos 2 caracteres
@@ -394,6 +426,16 @@ wordInput.addEventListener('input', (event) => {
 					const wordData = loadWord(word, data);
 					if (wordData) {
 						definitionTextArea.value = wordData.definition;
+						// Mostrar etiquetas existentes
+						showExistingTags(wordData.tags);
+						// Activar el panel de etiquetas disponibles si hay alguna
+						if (wordData.definition.includes('#')) {
+							isWritingTag = true;
+							showAvailableTagsPanel().then(() => {
+								// Filtrar las etiquetas para ocultar las que ya están en uso
+								filterAvailableTags('');
+							});
+						}
 					}
 					searchResults.classList.add('hidden');
 					addToHistory(word);
@@ -404,6 +446,82 @@ wordInput.addEventListener('input', (event) => {
 			searchResults.classList.add('hidden');
 		}
 	});
+});
+
+// Función para mostrar etiquetas existentes
+function showExistingTags(tags) {
+	// Si se proporciona un string, extraer etiquetas
+	if (typeof tags === 'string') {
+		tags = extractTags(tags);
+	}
+	
+	// Eliminar duplicados si hay
+	if (Array.isArray(tags)) {
+		tags = [...new Set(tags)];
+	}
+	
+	// Buscar o crear el contenedor de etiquetas existentes
+	let existingTagsContainer = document.getElementById('existing-tags');
+	if (!existingTagsContainer) {
+		existingTagsContainer = document.createElement('div');
+		existingTagsContainer.id = 'existing-tags';
+		existingTagsContainer.className = 'existing-tags';
+		// Insertar después del textarea de definición y antes del panel de etiquetas disponibles
+		const availableTagsContainer = document.getElementById('available-tags');
+		if (availableTagsContainer && availableTagsContainer.parentNode) {
+			availableTagsContainer.parentNode.insertBefore(existingTagsContainer, availableTagsContainer);
+		} else {
+			// Si no existe el panel de etiquetas disponibles, insertar después del textarea
+			definitionTextArea.insertAdjacentElement('afterend', existingTagsContainer);
+		}
+	}
+	
+	// Limpiar el contenedor
+	existingTagsContainer.innerHTML = '';
+	
+	// Si no hay etiquetas, ocultar el contenedor
+	if (!tags || tags.length === 0) {
+		existingTagsContainer.classList.add('hidden');
+		return;
+	}
+	
+	// Mostrar el título
+	const titleElement = document.createElement('div');
+	titleElement.className = 'existing-tags-label';
+	titleElement.textContent = 'Etiquetas:';
+	existingTagsContainer.appendChild(titleElement);
+	
+	// Añadir cada etiqueta
+	const tagsContainer = document.createElement('div');
+	tagsContainer.className = 'existing-tags-list';
+	
+	tags.forEach(tag => {
+		const tagElement = document.createElement('span');
+		tagElement.className = 'existing-tag';
+		tagElement.textContent = '#' + tag;
+		// Al hacer clic en una etiqueta existente, insertarla en el cursor
+		tagElement.addEventListener('click', () => {
+			insertTagInTextarea(tag);
+		});
+		tagsContainer.appendChild(tagElement);
+	});
+	
+	existingTagsContainer.appendChild(tagsContainer);
+	existingTagsContainer.classList.remove('hidden');
+}
+
+// Resaltar etiquetas en tiempo real al escribir
+definitionTextArea.addEventListener('input', async function(e) {
+	// Resaltar etiquetas mientras el usuario escribe (solo visualmente)
+	const definitionText = this.value;
+	const formattedText = formatDefinitionWithTags(definitionText);
+	
+	// Extraer etiquetas y mostrarlas
+	const tags = extractTags(definitionText);
+	showExistingTags(tags);
+	
+	// Detectar si estamos escribiendo una etiqueta para mostrar el panel de etiquetas
+	await detectTagWritingPanel(this);
 });
 
 // Cerrar los resultados de búsqueda al hacer clic fuera
@@ -687,57 +805,204 @@ const deleteData = () => {
 	console.log("Datos eliminados exitosamente");
 }
 
-// Resaltar etiquetas en tiempo real al escribir
-definitionTextArea.addEventListener('input', function() {
-	// Resaltar etiquetas mientras el usuario escribe (solo visualmente)
-	const definitionText = this.value;
-	const formattedText = formatDefinitionWithTags(definitionText);
+// Función para detectar si estamos escribiendo una etiqueta y mostrar el panel
+async function detectTagWritingPanel(textarea) {
+	const text = textarea.value;
+	const cursorPos = textarea.selectionStart;
 	
-	// Si hay etiquetas, mostrar una pequeña nota informativa
-	const tagsPreview = document.getElementById('tags-preview');
-	const tags = extractTags(definitionText);
+	// Verificar si hay algún # en el texto
+	const hasHash = text.includes('#');
 	
-	if (tags.length > 0) {
-		tagsPreview.innerHTML = `<span class="tags-preview-label">Etiquetas:</span> ${tags.map(tag => `<span class="tag-preview">#${tag}</span>`).join(' ')}`;
-		tagsPreview.classList.remove('hidden');
+	// Si hay un # en el texto y el panel no está activo, mostrarlo
+	if (hasHash && !isWritingTag) {
+		isWritingTag = true;
+		await showAvailableTagsPanel();
+		// Filtrar inmediatamente para ocultar etiquetas ya utilizadas
+		filterAvailableTags('');
+	} 
+	// Si no hay # en el texto pero el panel está activo, ocultarlo
+	else if (!hasHash && isWritingTag) {
+		isWritingTag = false;
+		hideAvailableTagsPanel();
+		return;
+	}
+	
+	// Si no estamos escribiendo una etiqueta, no continuar
+	if (!isWritingTag) return;
+	
+	// Encontrar el tag actual que está escribiendo (si existe)
+	let partialTag = '';
+	let hashPos = -1;
+	
+	// Buscar el # más cercano al cursor
+	for (let i = cursorPos - 1; i >= 0; i--) {
+		if (text[i] === '#') {
+			hashPos = i;
+			break;
+		} else if (/\s/.test(text[i])) {
+			break;
+		}
+	}
+	
+	if (hashPos !== -1) {
+		// Buscar el final del tag
+		let tagEnd = cursorPos;
+		for (let i = cursorPos; i < text.length; i++) {
+			if (/\s/.test(text[i])) {
+				tagEnd = i;
+				break;
+			}
+		}
+		
+		partialTag = text.substring(hashPos + 1, tagEnd);
+		
+		// Actualizar el filtro de etiquetas en el panel
+		filterAvailableTags(partialTag);
 	} else {
-		tagsPreview.classList.add('hidden');
+		// Si no hay un # cercano al cursor, mostrar todas las etiquetas sin filtrar
+		// pero ocultando las que ya están en uso
+		filterAvailableTags('');
 	}
-});
+}
 
-// Inicialización
-document.addEventListener('DOMContentLoaded', async () => {
-	// Iniciar en la pestaña principal
-	switchTab('main');
+// Función para mostrar el panel de etiquetas disponibles
+async function showAvailableTagsPanel() {
+	const availableTagsContainer = document.getElementById('available-tags');
 	
-	// Crear el contenedor de vista previa de etiquetas si no existe
-	if (!document.getElementById('tags-preview')) {
-		const tagsPreview = document.createElement('div');
-		tagsPreview.id = 'tags-preview';
-		tagsPreview.className = 'tags-preview hidden';
-		// Insertar después del textarea de definición
-		definitionTextArea.insertAdjacentElement('afterend', tagsPreview);
+	// Si el panel ya está visible, no hacer nada
+	if (!availableTagsContainer.classList.contains('hidden')) {
+		return Promise.resolve();
 	}
 	
-	// Verificar si necesitamos migrar datos (para usuarios existentes)
-	await checkDataFormat();
+	// Cargar todas las etiquetas
+	const allTags = await loadAllTags();
 	
-	// Cargar las etiquetas si está en la pestaña de palabras
-	if (document.getElementById('wordlist-tab').classList.contains('active')) {
-		await loadTagsFilter();
+	// Limpiar el contenedor
+	availableTagsContainer.innerHTML = '';
+	
+	// Si no hay etiquetas, mostrar mensaje
+	if (allTags.length === 0) {
+		const noTagsMessage = document.createElement('div');
+		noTagsMessage.className = 'no-tags-message';
+		noTagsMessage.textContent = 'No hay etiquetas disponibles';
+		availableTagsContainer.appendChild(noTagsMessage);
+	} else {
+		// Añadir cada etiqueta al contenedor (sin título)
+		allTags.forEach(tag => {
+			const tagElement = document.createElement('span');
+			tagElement.className = 'available-tag';
+			tagElement.dataset.tag = tag;
+			tagElement.textContent = '#' + tag;
+			
+			// Al hacer clic, insertar la etiqueta en el textarea
+			tagElement.addEventListener('click', () => {
+				insertTagInTextarea(tag);
+			});
+			
+			availableTagsContainer.appendChild(tagElement);
+		});
 	}
-});
+	
+	// Mostrar el contenedor
+	availableTagsContainer.classList.remove('hidden');
+	
+	// Devolver una promesa resuelta para permitir encadenamiento
+	return Promise.resolve();
+}
 
-// Funciones para el manejo de etiquetas
+// Función para filtrar las etiquetas mostradas según lo que se está escribiendo
+function filterAvailableTags(partialTag) {
+	const availableTagsContainer = document.getElementById('available-tags');
+	if (!availableTagsContainer || availableTagsContainer.classList.contains('hidden')) return;
+	
+	// Obtener las etiquetas que ya se están utilizando en la definición actual
+	const currentTags = extractTags(definitionTextArea.value);
+	
+	const tagElements = availableTagsContainer.querySelectorAll('.available-tag');
+	let hasVisibleTags = false;
+	
+	// Eliminar cualquier mensaje previo
+	const prevMessage = availableTagsContainer.querySelector('.no-match-message');
+	if (prevMessage) prevMessage.remove();
+	
+	// Procesar cada etiqueta disponible
+	tagElements.forEach(el => {
+		const tag = el.dataset.tag;
+		
+		// Ocultar las etiquetas que ya están siendo utilizadas
+		if (currentTags.includes(tag)) {
+			el.style.display = 'none';
+			return;
+		}
+		
+		// Si hay texto parcial, filtrar por coincidencia
+		if (partialTag && partialTag.trim() !== '') {
+			if (tag.toLowerCase().includes(partialTag.toLowerCase())) {
+				el.style.display = '';
+				hasVisibleTags = true;
+				
+				// Resaltar la parte coincidente
+				const regex = new RegExp(`(${partialTag})`, 'i');
+				el.innerHTML = '#' + tag.replace(regex, '<span class="tag-highlight">$1</span>');
+				
+				// Mover las coincidencias exactas al principio
+				if (tag.toLowerCase().startsWith(partialTag.toLowerCase())) {
+					availableTagsContainer.insertBefore(el, availableTagsContainer.firstChild);
+				}
+			} else {
+				el.style.display = 'none';
+			}
+		} else {
+			// Si no hay texto parcial, mostrar todas excepto las ya usadas
+			el.style.display = '';
+			el.textContent = '#' + tag;
+			hasVisibleTags = true;
+		}
+	});
+	
+	// Si no hay etiquetas visibles, mostrar un mensaje
+	if (!hasVisibleTags && tagElements.length > 0) {
+		const message = document.createElement('div');
+		message.className = 'no-match-message';
+		
+		if (currentTags.length > 0) {
+			message.textContent = partialTag ? 
+				'No hay coincidencias disponibles' : 
+				'Ya estás usando todas las etiquetas disponibles';
+		} else {
+			message.textContent = 'No hay coincidencias';
+		}
+		
+		availableTagsContainer.appendChild(message);
+	}
+}
+
+// Función para extraer etiquetas únicas de una definición (para evitar duplicados)
 function extractTags(definition) {
 	const tagRegex = /#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g;
 	const matches = definition.match(tagRegex) || [];
-	return matches.map(tag => tag.substring(1)); // Eliminar el # del inicio
+	
+	// Eliminar duplicados manteniendo solo la primera aparición de cada etiqueta
+	const uniqueTags = [...new Set(matches.map(tag => tag.substring(1)))];
+	return uniqueTags;
 }
 
 function formatDefinitionWithTags(definition) {
 	// Resaltar las etiquetas en el texto de la definición
-	return definition.replace(/#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g, '<span class="tag">#$1</span>');
+	// Usamos un conjunto para rastrear etiquetas ya vistas y aplicar estilos diferentes a duplicados
+	const seenTags = new Set();
+	
+	// Reemplazamos cada etiqueta, pero rastreamos cuáles ya hemos visto
+	return definition.replace(/#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g, (match, tag) => {
+		// Si ya hemos visto esta etiqueta, aplicar un estilo diferente
+		if (seenTags.has(tag.toLowerCase())) {
+			return `<span class="tag tag-duplicate">${match}</span>`;
+		}
+		
+		// Agregar a etiquetas vistas
+		seenTags.add(tag.toLowerCase());
+		return `<span class="tag">${match}</span>`;
+	});
 }
 
 // Función para cargar una palabra (compatible con ambos formatos)
@@ -819,4 +1084,144 @@ async function loadAllTags() {
 	}
 	
 	return Array.from(allTags).sort();
+}
+
+// Función para mostrar/ocultar las etiquetas disponibles (botón info)
+// Esta función ya no se usa porque eliminamos el botón, pero la mantenemos por compatibilidad
+async function toggleAvailableTags() {
+	const availableTagsContainer = document.getElementById('available-tags');
+	
+	// Si ya está visible, ocultarlo
+	if (!availableTagsContainer.classList.contains('hidden')) {
+		availableTagsContainer.classList.add('hidden');
+		isWritingTag = false;
+		return;
+	}
+	
+	// Mostrar el panel
+	isWritingTag = true;
+	await showAvailableTagsPanel();
+}
+
+// Cerrar panel de etiquetas al hacer clic fuera del textarea y del panel
+document.addEventListener('click', (event) => {
+	const availableTagsContainer = document.getElementById('available-tags');
+	
+	// Si el clic fue fuera del panel y del textarea, cerrar el panel
+	if (availableTagsContainer && !availableTagsContainer.contains(event.target) && 
+		event.target !== definitionTextArea) {
+		hideAvailableTagsPanel();
+		isWritingTag = false;
+	}
+});
+
+// Eliminar las funciones antiguas de sugerencias flotantes que ya no se utilizarán
+function closeSuggestions() {
+	// Esta función se mantiene para compatibilidad, pero ahora simplemente cierra el panel
+	hideAvailableTagsPanel();
+	isWritingTag = false;
+	suggestionsActive = false;
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', async () => {
+	// Iniciar en la pestaña principal
+	switchTab('main');
+	
+	// Crear el contenedor de vista previa de etiquetas si no existe
+	if (!document.getElementById('tags-preview')) {
+		const tagsPreview = document.createElement('div');
+		tagsPreview.id = 'tags-preview';
+		tagsPreview.className = 'tags-preview hidden';
+		// Insertar después del textarea de definición
+		definitionTextArea.insertAdjacentElement('afterend', tagsPreview);
+	}
+	
+	// Verificar si necesitamos migrar datos (para usuarios existentes)
+	await checkDataFormat();
+	
+	// Cargar las etiquetas si está en la pestaña de palabras
+	if (document.getElementById('wordlist-tab').classList.contains('active')) {
+		await loadTagsFilter();
+	}
+	
+	// Inicializar las etiquetas existentes para la palabra actual (si hay)
+	if (wordInput.value) {
+		loadData().then(data => {
+			const word = wordInput.value;
+			if (data[word]) {
+				const wordData = loadWord(word, data);
+				if (wordData && wordData.tags) {
+					showExistingTags(wordData.tags);
+				}
+			}
+		});
+	}
+});
+
+// Función para ocultar el panel de etiquetas disponibles
+function hideAvailableTagsPanel() {
+	const availableTagsContainer = document.getElementById('available-tags');
+	availableTagsContainer.classList.add('hidden');
+}
+
+// Función para insertar una etiqueta en el textarea
+function insertTagInTextarea(tag) {
+	// Obtener la posición actual del cursor
+	const cursorPos = definitionTextArea.selectionStart;
+	const text = definitionTextArea.value;
+	
+	// Buscar si ya hay un # cerca del cursor que se esté editando
+	let hashPos = -1;
+	let tagEnd = cursorPos;
+	
+	for (let i = cursorPos - 1; i >= 0; i--) {
+		if (text[i] === '#') {
+			hashPos = i;
+			break;
+		} else if (/\s/.test(text[i])) {
+			break;
+		}
+	}
+	
+	// Buscar el final del tag si existe
+	if (hashPos !== -1) {
+		for (let i = hashPos + 1; i < text.length; i++) {
+			if (/\s/.test(text[i])) {
+				tagEnd = i;
+				break;
+			}
+		}
+		if (tagEnd === cursorPos) {
+			tagEnd = text.length;
+		}
+		
+		// Reemplazar el tag parcial con el tag completo
+		const newText = text.substring(0, hashPos + 1) + tag + ' ' + text.substring(tagEnd);
+		definitionTextArea.value = newText;
+		
+		// Mover el cursor después del tag insertado
+		const newCursorPos = hashPos + tag.length + 2; // +2 para el # y el espacio
+		definitionTextArea.setSelectionRange(newCursorPos, newCursorPos);
+	} else {
+		// Determinar si necesitamos un espacio antes del tag
+		const needsSpace = cursorPos > 0 && text.charAt(cursorPos - 1) !== ' ' && text.charAt(cursorPos - 1) !== '\n';
+		
+		// Crear el texto a insertar
+		const insertText = (needsSpace ? ' ' : '') + '#' + tag + ' ';
+		
+		// Insertar la etiqueta en la posición del cursor
+		const newText = text.substring(0, cursorPos) + insertText + text.substring(cursorPos);
+		definitionTextArea.value = newText;
+		
+		// Mover el cursor después de la etiqueta insertada
+		const newCursorPos = cursorPos + insertText.length;
+		definitionTextArea.setSelectionRange(newCursorPos, newCursorPos);
+	}
+	
+	// Actualizar la vista previa de etiquetas
+	definitionTextArea.dispatchEvent(new Event('input'));
+	
+	// Mantener el foco en el textarea
+	definitionTextArea.focus();
 }

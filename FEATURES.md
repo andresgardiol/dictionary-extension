@@ -6,3 +6,4 @@
 6. Mejoras de accesibilidad: Soporte para lectores de pantalla. Opciones de alto contraste y ajustes de tamaño de texto
 7. Sincronización entre dispositivos: Guardar el diccionario en la nube (con Google Drive o similar). Permitir sincronizar entre diferentes navegadores/dispositivos
 8. Integración con herramientas de productividad: Exportación a sistemas como Anki, Notion, etc. API para que otras extensiones puedan interactuar con el diccionario
+9. Si una definición contiene una palabra que ya ha sido definida, debería o abrirse un popup con la definición de la palabra (al estilo de wikipedia) o al clickear la palabra ir a su definición.
