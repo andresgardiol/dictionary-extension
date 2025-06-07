@@ -105,6 +105,13 @@ input:focus {
     box-shadow: 0 0 0 2px rgba(174, 68, 240, 0.4);
 }
 
+/* Enhanced focus for inputs */
+input:focus {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--bg-dark), 0 0 0 5px var(--accent-cyan);
+}
+
 /* Style definition and add full width. Lock horizontal resizing */
 #definition {
     width: 100%;
@@ -127,6 +134,13 @@ input:focus {
     box-shadow: 0 0 0 2px rgba(174, 68, 240, 0.4);
 }
 
+/* Enhanced focus for textarea */
+#definition:focus {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--bg-dark), 0 0 0 5px var(--accent-cyan);
+}
+
 /* Style buttons */
 button {
     border: none;
@@ -145,6 +159,13 @@ button {
     border-radius: 12px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced focus indicators for better accessibility */
+button:focus {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--bg-dark), 0 0 0 5px var(--accent-cyan);
 }
 
 button:active {
@@ -530,6 +551,15 @@ button svg {
     justify-content: space-between;
     align-items: flex-start;
     transition: background-color 0.2s ease;
+    border-radius: 8px;
+    margin: 2px;
+}
+
+/* Enhanced focus for clickable items */
+.word-item:focus, .history-item:focus {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 2px;
+    background-color: rgba(174, 68, 240, 0.1);
 }
 
 .word-item:hover, .history-item:hover {

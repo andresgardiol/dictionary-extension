@@ -81,6 +81,9 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 	filteredWords.forEach(word => {
 		const wordItem = document.createElement('div');
 		wordItem.className = 'word-item';
+		wordItem.tabIndex = 0; // Make focusable with keyboard
+		wordItem.setAttribute('role', 'button');
+		wordItem.setAttribute('aria-label', `Edit word: ${word}`);
 		
 		const wordContainer = document.createElement('div');
 		wordContainer.className = 'word-container';
@@ -229,20 +232,25 @@ async function loadTagsFilter() {
 	});
 }
 
-// Función para manejar el sistema de pestañas
+// Function to handle tab system
 const switchTab = (tabId) => {
-	// Desactivar todas las pestañas
+	// Deactivate all tabs
 	document.querySelectorAll('.tab-button').forEach(tab => {
 		tab.classList.remove('active');
+		tab.setAttribute('aria-selected', 'false');
 	});
 	
 	document.querySelectorAll('.tab-content').forEach(content => {
 		content.classList.remove('active');
 	});
 	
-	// Activar la pestaña seleccionada
-	document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
-	document.getElementById(`${tabId}-tab`).classList.add('active');
+	// Activate selected tab
+	const activeTab = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+	const activeContent = document.getElementById(`${tabId}-tab`);
+	
+	activeTab.classList.add('active');
+	activeTab.setAttribute('aria-selected', 'true');
+	activeContent.classList.add('active');
 	
 	// Si es la pestaña de palabras, cargar la lista y las etiquetas
 	if (tabId === 'wordlist') {
@@ -337,6 +345,9 @@ const loadHistoryList = async () => {
 		const historyItem = document.createElement('div');
 		historyItem.className = 'history-item';
 		historyItem.textContent = word;
+		historyItem.tabIndex = 0; // Make focusable with keyboard
+		historyItem.setAttribute('role', 'button');
+		historyItem.setAttribute('aria-label', `Search for: ${word}`);
 		
 		historyItem.addEventListener('click', () => {
 			wordInput.value = word;
