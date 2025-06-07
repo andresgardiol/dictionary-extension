@@ -298,7 +298,7 @@ document.getElementById('export-json').addEventListener('click', (event) => {
 		navigator.clipboard.writeText(dataString).then(() => {
 			showNotification('Datos exportados en formato JSON al portapapeles', 'success');
 		}).catch((err) => {
-			console.log('Error copying data to clipboard', err);
+			console.log('Error al copiar datos al portapapeles', err);
 			showNotification('Error al exportar datos', 'error');
 		});
 	});
@@ -325,7 +325,7 @@ document.getElementById('export-csv').addEventListener('click', (event) => {
 		navigator.clipboard.writeText(csvContent).then(() => {
 			showNotification('Datos exportados en formato CSV al portapapeles', 'success');
 		}).catch((err) => {
-			console.log('Error copying CSV data to clipboard', err);
+			console.log('Error al copiar datos CSV al portapapeles', err);
 			showNotification('Error al exportar datos en CSV', 'error');
 		});
 	});
@@ -349,7 +349,7 @@ document.getElementById('export-txt').addEventListener('click', (event) => {
 		navigator.clipboard.writeText(txtContent).then(() => {
 			showNotification('Datos exportados en formato TXT al portapapeles', 'success');
 		}).catch((err) => {
-			console.log('Error copying TXT data to clipboard', err);
+			console.log('Error al copiar datos TXT al portapapeles', err);
 			showNotification('Error al exportar datos en TXT', 'error');
 		});
 	});
@@ -382,7 +382,7 @@ document.getElementById('import-json').addEventListener('click', async (event) =
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error parsing JSON data', err);
+		console.log('Error al analizar datos JSON', err);
 		showNotification('Error al importar datos JSON', 'error');
 	}
 });
@@ -452,7 +452,7 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error parsing CSV data', err);
+		console.log('Error al analizar datos CSV', err);
 		showNotification('Error al importar datos CSV', 'error');
 	}
 });
@@ -503,7 +503,7 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error parsing TXT data', err);
+		console.log('Error al analizar datos TXT', err);
 		showNotification('Error al importar datos TXT', 'error');
 	}
 });
@@ -537,7 +537,7 @@ deleteButton.addEventListener('click', (event) => {
 const saveData = (data) => {
 	return chrome.storage.local.set({data: data})
 		.then(() => {
-			console.log("Successfully saved");
+			console.log("Datos guardados exitosamente");
 			return data;
 		});
 }
@@ -551,7 +551,7 @@ const loadData = () => {
 
 const deleteData = () => {
 	chrome.storage.local.clear();
-	console.log("Successfully deleted data");
+	console.log("Datos eliminados exitosamente");
 }
 
 // Inicialización

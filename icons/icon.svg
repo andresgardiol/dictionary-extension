@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ae44f0" />
+      <stop offset="100%" stop-color="#8a3aff" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4096ff" />
+      <stop offset="100%" stop-color="#32d4e0" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="3" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fondo circular con degradado -->
+  <circle cx="64" cy="64" r="60" fill="#0e1339" />
+  
+  <!-- Libro abierto estilizado -->
+  <path d="M40 40 v48 c0 4 4 8 8 8 h56 v-56 h-56 c-4 0-8 4-8 8 v-8 z" fill="url(#gradient1)" filter="url(#shadow)" />
+  <path d="M88 40 v48 c0 4 -4 8 -8 8 h-32 v-56 h32 c4 0 8 4 8 8 v-8 z" fill="url(#gradient2)" filter="url(#shadow)" />
+  
+  <!-- Líneas de texto estilizadas -->
+  <line x1="52" y1="52" x2="76" y2="52" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <line x1="52" y1="60" x2="68" y2="60" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <line x1="52" y1="68" x2="72" y2="68" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <line x1="52" y1="76" x2="64" y2="76" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+</svg> 

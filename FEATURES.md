@@ -1,0 +1,2 @@
+1. Debemos unificar el input de "Buscar palabra" y el de "Palabra" ya que práctiamente tienen la misma funcionalidad.
+2. Permitir al usuario seleccionar una palabra en una página y agregarla al diccionario para poder agregarle un significado
