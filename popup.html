@@ -9,6 +9,15 @@
 </head>
 <body>
 <h1>Personal dictionary</h1>
+
+<!-- Notification container -->
+<div id="notification" class="notification hidden"></div>
+
+<div id="search-container">
+	<input type="text" id="search" placeholder="Buscar palabra..." />
+	<div id="search-results" class="hidden"></div>
+</div>
+
 <form id="form">
 	<input type="text" id="word" placeholder="Word" autofocus/>
 	<br/>
@@ -16,9 +25,28 @@
 	<br/>
 	<button type="submit" id="save" class="primary full-width">Save</button>
 	<br/>
-	<button title="Import from clipboard" type="button" id="import" class="secondary">Import</button>
-	<button title="Export to clipboard" type="button" id="export" class="secondary">Export</button>
-	<button title="Delete all data" type="button" id="delete" class="warning">Delete</button>
+	
+	<div class="button-group">
+		<div class="dropdown">
+			<button type="button" id="import" class="secondary">Import</button>
+			<div class="dropdown-content">
+				<a href="#" id="import-json">JSON</a>
+				<a href="#" id="import-csv">CSV</a>
+				<a href="#" id="import-txt">TXT</a>
+			</div>
+		</div>
+		
+		<div class="dropdown">
+			<button type="button" id="export" class="secondary">Export</button>
+			<div class="dropdown-content">
+				<a href="#" id="export-json">JSON</a>
+				<a href="#" id="export-csv">CSV</a>
+				<a href="#" id="export-txt">TXT</a>
+			</div>
+		</div>
+		
+		<button title="Delete all data" type="button" id="delete" class="warning">Delete</button>
+	</div>
 </form>
 <ul></ul>
 

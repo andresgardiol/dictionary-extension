@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Siempre usa un enfoque simplificado, evita usar librerías externas cuando no hacen falta.
+
+
+Enfocate en la rapidez y simplicidad
