@@ -2,6 +2,123 @@ const definitionTextArea = document.getElementById('definition');
 const notification = document.getElementById('notification');
 const searchInput = document.getElementById('search');
 const searchResults = document.getElementById('search-results');
+const wordsList = document.getElementById('words-list');
+const wordlistFilter = document.getElementById('wordlist-filter');
+const historyList = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history');
+
+// Historial de búsquedas - máximo 10 elementos
+const MAX_HISTORY_ITEMS = 10;
+
+// Función para cargar y mostrar la lista de palabras
+const loadWordsList = async (filter = '') => {
+	const data = await loadData();
+	const words = Object.keys(data);
+	
+	// Limpiar lista existente
+	wordsList.innerHTML = '';
+	
+	if (words.length === 0) {
+		const emptyMessage = document.createElement('div');
+		emptyMessage.className = 'empty-message';
+		emptyMessage.textContent = 'No hay palabras guardadas';
+		wordsList.appendChild(emptyMessage);
+		return;
+	}
+	
+	// Filtrar y ordenar palabras
+	const filteredWords = filter 
+		? words.filter(word => word.toLowerCase().includes(filter.toLowerCase()))
+		: words;
+	
+	filteredWords.sort((a, b) => a.localeCompare(b));
+	
+	filteredWords.forEach(word => {
+		const wordItem = document.createElement('div');
+		wordItem.className = 'word-item';
+		
+		const wordText = document.createElement('span');
+		wordText.textContent = word;
+		wordItem.appendChild(wordText);
+		
+		const wordActions = document.createElement('div');
+		wordActions.className = 'word-actions';
+		
+		const editBtn = document.createElement('button');
+		editBtn.className = 'small secondary';
+		editBtn.textContent = 'Editar';
+		editBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			wordInput.value = word;
+			definitionTextArea.value = data[word];
+			switchTab('main');
+			wordInput.focus();
+		});
+		
+		const deleteBtn = document.createElement('button');
+		deleteBtn.className = 'small warning';
+		deleteBtn.textContent = 'Borrar';
+		deleteBtn.addEventListener('click', async (e) => {
+			e.stopPropagation();
+			if (confirm(`¿Estás seguro de que deseas eliminar "${word}"?`)) {
+				const currentData = await loadData();
+				delete currentData[word];
+				await saveData(currentData);
+				showNotification(`"${word}" ha sido eliminado`, 'info');
+				loadWordsList(wordlistFilter.value);
+			}
+		});
+		
+		wordActions.appendChild(editBtn);
+		wordActions.appendChild(deleteBtn);
+		wordItem.appendChild(wordActions);
+		
+		// Añadir evento para cargar la palabra
+		wordItem.addEventListener('click', () => {
+			wordInput.value = word;
+			definitionTextArea.value = data[word];
+			switchTab('main');
+			addToHistory(word);
+		});
+		
+		wordsList.appendChild(wordItem);
+	});
+};
+
+// Función para manejar el sistema de pestañas
+const switchTab = (tabId) => {
+	// Desactivar todas las pestañas
+	document.querySelectorAll('.tab-button').forEach(tab => {
+		tab.classList.remove('active');
+	});
+	
+	document.querySelectorAll('.tab-content').forEach(content => {
+		content.classList.remove('active');
+	});
+	
+	// Activar la pestaña seleccionada
+	document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
+	document.getElementById(`${tabId}-tab`).classList.add('active');
+	
+	// Si es la pestaña de palabras, cargar la lista
+	if (tabId === 'wordlist') {
+		loadWordsList();
+	} else if (tabId === 'history') {
+		loadHistoryList();
+	}
+};
+
+// Configurar los eventos de las pestañas
+document.querySelectorAll('.tab-button').forEach(tab => {
+	tab.addEventListener('click', () => {
+		switchTab(tab.getAttribute('data-tab'));
+	});
+});
+
+// Filtrar la lista de palabras
+wordlistFilter.addEventListener('input', () => {
+	loadWordsList(wordlistFilter.value);
+});
 
 // Función para mostrar notificaciones
 const showNotification = (message, type = 'info') => {
@@ -14,6 +131,82 @@ const showNotification = (message, type = 'info') => {
 	}, 3000);
 };
 
+// Funciones para el historial de búsquedas
+const addToHistory = async (word) => {
+	if (!word) return;
+	
+	// Cargar historial actual
+	let history = await loadHistory();
+	
+	// Eliminar si ya existe (para ponerlo al principio)
+	history = history.filter(item => item !== word);
+	
+	// Añadir al principio
+	history.unshift(word);
+	
+	// Limitar a MAX_HISTORY_ITEMS
+	if (history.length > MAX_HISTORY_ITEMS) {
+		history = history.slice(0, MAX_HISTORY_ITEMS);
+	}
+	
+	// Guardar historial
+	await saveHistory(history);
+	
+	// Actualizar la lista si es visible
+	if (document.getElementById('history-tab').classList.contains('active')) {
+		loadHistoryList();
+	}
+};
+
+const loadHistory = async () => {
+	return chrome.storage.local.get(['history'])
+		.then((result) => {
+			return Array.isArray(result.history) ? result.history : [];
+		});
+};
+
+const saveHistory = async (history) => {
+	return chrome.storage.local.set({ history });
+};
+
+const loadHistoryList = async () => {
+	const history = await loadHistory();
+	const data = await loadData();
+	
+	historyList.innerHTML = '';
+	
+	if (history.length === 0) {
+		const emptyMessage = document.createElement('div');
+		emptyMessage.className = 'empty-message';
+		emptyMessage.textContent = 'No hay búsquedas recientes';
+		historyList.appendChild(emptyMessage);
+		return;
+	}
+	
+	history.forEach(word => {
+		const historyItem = document.createElement('div');
+		historyItem.className = 'history-item';
+		historyItem.textContent = word;
+		
+		historyItem.addEventListener('click', () => {
+			wordInput.value = word;
+			definitionTextArea.value = data[word] || '';
+			switchTab('main');
+		});
+		
+		historyList.appendChild(historyItem);
+	});
+};
+
+// Limpiar historial
+clearHistoryBtn.addEventListener('click', async () => {
+	if (confirm('¿Estás seguro de que deseas limpiar todo el historial?')) {
+		await saveHistory([]);
+		loadHistoryList();
+		showNotification('Historial limpiado', 'info');
+	}
+});
+
 const form = document.getElementById('form');
 form.addEventListener('submit', (event) => {
 	event.preventDefault();
@@ -23,6 +216,7 @@ form.addEventListener('submit', (event) => {
 			data[input] = definitionTextArea.value;
 			saveData(data).then(() => {
 				showNotification(`"${wordInput.value}" se ha guardado exitosamente`, 'success');
+				addToHistory(input);
 				wordInput.value = '';
 				definitionTextArea.value = '';
 				wordInput.focus();
@@ -39,7 +233,7 @@ wordInput.addEventListener('input', (event) => {
 		const inputOriginal = wordInput.value;
 		const inputLower = inputOriginal.toLowerCase();
 		const inputUpper = inputOriginal.toUpperCase();
-		const inputCapitalized = inputOriginal.charAt(0).toUpperCase() + inputOriginal.slice(1);;
+		const inputCapitalized = inputOriginal.charAt(0).toUpperCase() + inputOriginal.slice(1);
 
 		let definition = data[inputOriginal] || data[inputLower] || data[inputUpper] || data[inputCapitalized]
 		if (definition) {
@@ -79,6 +273,7 @@ searchInput.addEventListener('input', (event) => {
 					definitionTextArea.value = data[word];
 					searchResults.classList.add('hidden');
 					searchInput.value = '';
+					addToHistory(word);
 				});
 				searchResults.appendChild(resultElement);
 			});
@@ -181,6 +376,11 @@ document.getElementById('import-json').addEventListener('click', async (event) =
 		
 		await saveData(newData);
 		showNotification(`Se importaron ${Object.keys(data).length} palabras correctamente`, 'success');
+		
+		// Actualizar la lista de palabras si está visible
+		if (document.getElementById('wordlist-tab').classList.contains('active')) {
+			loadWordsList();
+		}
 	} catch (err) {
 		console.log('Error parsing JSON data', err);
 		showNotification('Error al importar datos JSON', 'error');
@@ -246,6 +446,11 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 		
 		await saveData(newData);
 		showNotification(`Se importaron ${count} palabras desde CSV`, 'success');
+		
+		// Actualizar la lista de palabras si está visible
+		if (document.getElementById('wordlist-tab').classList.contains('active')) {
+			loadWordsList();
+		}
 	} catch (err) {
 		console.log('Error parsing CSV data', err);
 		showNotification('Error al importar datos CSV', 'error');
@@ -292,6 +497,11 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 		
 		await saveData(newData);
 		showNotification(`Se importaron ${count} palabras desde TXT`, 'success');
+		
+		// Actualizar la lista de palabras si está visible
+		if (document.getElementById('wordlist-tab').classList.contains('active')) {
+			loadWordsList();
+		}
 	} catch (err) {
 		console.log('Error parsing TXT data', err);
 		showNotification('Error al importar datos TXT', 'error');
@@ -317,25 +527,35 @@ deleteButton.addEventListener('click', (event) => {
 	if (confirm('¿Estás seguro de que deseas eliminar todos los datos?')) {
 		deleteData();
 		showNotification('Todos los datos han sido eliminados', 'info');
+		// Actualizar la lista de palabras si está visible
+		if (document.getElementById('wordlist-tab').classList.contains('active')) {
+			loadWordsList();
+		}
 	}
 });
 
 const saveData = (data) => {
 	return chrome.storage.local.set({data: data})
-			.then(() => {
-				console.log("Successfully saved");
-				return data;
-			});
+		.then(() => {
+			console.log("Successfully saved");
+			return data;
+		});
 }
 
 const loadData = () => {
 	return chrome.storage.local.get(['data'])
-			.then((result) => {
-				return !result.data ? {} : result.data;
-			});
+		.then((result) => {
+			return !result.data ? {} : result.data;
+		});
 }
 
 const deleteData = () => {
 	chrome.storage.local.clear();
 	console.log("Successfully deleted data");
 }
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+	// Iniciar en la pestaña principal
+	switchTab('main');
+});

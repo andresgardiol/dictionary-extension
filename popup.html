@@ -13,42 +13,75 @@
 <!-- Notification container -->
 <div id="notification" class="notification hidden"></div>
 
-<div id="search-container">
-	<input type="text" id="search" placeholder="Buscar palabra..." />
-	<div id="search-results" class="hidden"></div>
-</div>
-
-<form id="form">
-	<input type="text" id="word" placeholder="Word" autofocus/>
-	<br/>
-	<textarea type="text" id="definition" placeholder="Definition"></textarea>
-	<br/>
-	<button type="submit" id="save" class="primary full-width">Save</button>
-	<br/>
-	
-	<div class="button-group">
-		<div class="dropdown">
-			<button type="button" id="import" class="secondary">Import</button>
-			<div class="dropdown-content">
-				<a href="#" id="import-json">JSON</a>
-				<a href="#" id="import-csv">CSV</a>
-				<a href="#" id="import-txt">TXT</a>
-			</div>
-		</div>
-		
-		<div class="dropdown">
-			<button type="button" id="export" class="secondary">Export</button>
-			<div class="dropdown-content">
-				<a href="#" id="export-json">JSON</a>
-				<a href="#" id="export-csv">CSV</a>
-				<a href="#" id="export-txt">TXT</a>
-			</div>
-		</div>
-		
-		<button title="Delete all data" type="button" id="delete" class="warning">Delete</button>
+<div class="tab-container">
+	<div class="tabs">
+		<button class="tab-button active" data-tab="main">Principal</button>
+		<button class="tab-button" data-tab="wordlist">Palabras</button>
+		<button class="tab-button" data-tab="history">Historial</button>
 	</div>
-</form>
-<ul></ul>
+	
+	<div class="tab-content active" id="main-tab">
+		<div id="search-container">
+			<input type="text" id="search" placeholder="Buscar palabra..." />
+			<div id="search-results" class="hidden"></div>
+		</div>
+		
+		<form id="form">
+			<input type="text" id="word" placeholder="Word" autofocus/>
+			<br/>
+			<textarea type="text" id="definition" placeholder="Definition"></textarea>
+			<br/>
+			<button type="submit" id="save" class="primary full-width">Save</button>
+			<br/>
+			
+			<div class="button-group">
+				<div class="dropdown">
+					<button type="button" id="import" class="secondary">Import</button>
+					<div class="dropdown-content">
+						<a href="#" id="import-json">JSON</a>
+						<a href="#" id="import-csv">CSV</a>
+						<a href="#" id="import-txt">TXT</a>
+					</div>
+				</div>
+				
+				<div class="dropdown">
+					<button type="button" id="export" class="secondary">Export</button>
+					<div class="dropdown-content">
+						<a href="#" id="export-json">JSON</a>
+						<a href="#" id="export-csv">CSV</a>
+						<a href="#" id="export-txt">TXT</a>
+					</div>
+				</div>
+				
+				<button title="Delete all data" type="button" id="delete" class="warning">Delete</button>
+			</div>
+		</form>
+	</div>
+	
+	<div class="tab-content" id="wordlist-tab">
+		<div class="list-header">
+			<h3>Palabras guardadas</h3>
+			<div class="filter-container">
+				<input type="text" id="wordlist-filter" placeholder="Filtrar..." />
+			</div>
+		</div>
+		<div id="words-list" class="words-list">
+			<!-- Las palabras se cargarán dinámicamente aquí -->
+			<div class="empty-message">No hay palabras guardadas</div>
+		</div>
+	</div>
+	
+	<div class="tab-content" id="history-tab">
+		<div class="list-header">
+			<h3>Historial de búsquedas</h3>
+			<button id="clear-history" class="small warning">Limpiar</button>
+		</div>
+		<div id="history-list" class="history-list">
+			<!-- El historial se cargará dinámicamente aquí -->
+			<div class="empty-message">No hay búsquedas recientes</div>
+		</div>
+	</div>
+</div>
 
 <script src="./popup.js" type="module"></script>
 </body>
