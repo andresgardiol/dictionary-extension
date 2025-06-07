@@ -1,63 +1,63 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	<title>Diccionario Personal</title>
+	<title>Personal Dictionary</title>
 	<link rel="stylesheet" href="./popup.css"/>
 </head>
 <body>
 <div class="title-container">
-	<h1>Diccionario Personal</h1>
-	<button title="Eliminar todos los datos" type="button" id="delete" class="warning icon-button">
+	<h1>Personal Dictionary</h1>
+	<button title="Delete all data" type="button" id="delete" class="warning icon-button">
 		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
 	</button>
 </div>
 
-<!-- Contenedor de notificaciones -->
+<!-- Notifications container -->
 <div id="notification" class="notification hidden"></div>
 
 <div class="tab-container">
 	<div class="tabs">
 		<button class="tab-button active" data-tab="main">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-			Principal
+			Main
 		</button>
 		<button class="tab-button" data-tab="wordlist">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-			Palabras
+			Words
 		</button>
 		<button class="tab-button" data-tab="history">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-			Historial
+			History
 		</button>
 	</div>
 	
 	<div class="tab-content active" id="main-tab">
 		<form id="form">
 			<div id="search-container">
-				<input type="text" id="word" placeholder="Buscar o agregar palabra..." autofocus autocomplete="off"/>
+				<input type="text" id="word" placeholder="Search or add word..." autofocus autocomplete="off"/>
 				<div id="search-results" class="hidden"></div>
 			</div>
 			
-			<textarea type="text" id="definition" placeholder="Definición"></textarea>
+			<textarea type="text" id="definition" placeholder="Definition"></textarea>
 			
-			<!-- Contenedor de etiquetas disponibles -->
+			<!-- Available tags container -->
 			<div id="available-tags" class="available-tags hidden">
-				<!-- Las etiquetas se cargarán dinámicamente aquí -->
+				<!-- Tags will be loaded dynamically here -->
 			</div>
 			
 			<button type="submit" id="save" class="primary full-width">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-				Guardar
+				Save
 			</button>
 			
 			<div class="button-group">
 				<div class="dropdown">
 					<button type="button" id="import" class="secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-						Importar
+						Import
 					</button>
 					<div class="dropdown-content">
 						<a href="#" id="import-json">JSON</a>
@@ -69,7 +69,7 @@
 				<div class="dropdown">
 					<button type="button" id="export" class="secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-						Exportar
+						Export
 					</button>
 					<div class="dropdown-content">
 						<a href="#" id="export-json">JSON</a>
@@ -83,45 +83,45 @@
 	
 	<div class="tab-content" id="wordlist-tab">
 		<div class="list-header">
-			<h3>Palabras guardadas</h3>
+			<h3>Saved words</h3>
 			<div class="filter-container">
-				<input type="text" id="wordlist-filter" placeholder="Filtrar..." autocomplete="off"/>
+				<input type="text" id="wordlist-filter" placeholder="Filter..." autocomplete="off"/>
 			</div>
 		</div>
 		
-		<!-- Filtro de etiquetas -->
+		<!-- Tags filter -->
 		<div class="tags-section">
 			<div class="tags-header">
-				<h4>Filtrar por etiquetas</h4>
+				<h4>Filter by tags</h4>
 			</div>
 			<div id="tags-filter" class="tags-filter">
-				<!-- Las etiquetas se cargarán dinámicamente aquí -->
-				<div class="empty-tags">No hay etiquetas disponibles</div>
+				<!-- Tags will be loaded dynamically here -->
+				<div class="empty-tags">No tags available</div>
 			</div>
 		</div>
 		
-		<!-- Estado del filtro de etiquetas -->
+		<!-- Tags filter status -->
 		<div id="tags-filter-status" class="tags-filter-status hidden">
-			<!-- Se mostrará el estado del filtro aquí -->
+			<!-- Filter status will be shown here -->
 		</div>
 		
 		<div id="words-list" class="words-list">
-			<!-- Las palabras se cargarán dinámicamente aquí -->
-			<div class="empty-message">No hay palabras guardadas</div>
+			<!-- Words will be loaded dynamically here -->
+			<div class="empty-message">No saved words</div>
 		</div>
 	</div>
 	
 	<div class="tab-content" id="history-tab">
 		<div class="list-header">
-			<h3>Historial de búsquedas</h3>
+			<h3>Search history</h3>
 			<button id="clear-history" class="small warning">
 				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-				Limpiar
+				Clear
 			</button>
 		</div>
 		<div id="history-list" class="history-list">
-			<!-- El historial se cargará dinámicamente aquí -->
-			<div class="empty-message">No hay búsquedas recientes</div>
+			<!-- History will be loaded dynamically here -->
+			<div class="empty-message">No recent searches</div>
 		</div>
 	</div>
 </div>

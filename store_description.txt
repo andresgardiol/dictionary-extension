@@ -1,36 +1,4 @@
-# Diccionario Personal 2.0
-
-## ESPAÑOL
-
-**Descripción breve:**
-Un diccionario personal para tus términos de trabajo y estudio.
-
-**Descripción general:**
-Diccionario Personal es una extensión que te permite guardar y organizar definiciones de palabras o términos que utilizas habitualmente en tu trabajo o estudios. Ideal para equipos que manejan terminología específica o para estudiantes que necesitan recordar conceptos clave.
-
-**Características principales:**
-- Guarda términos con sus definiciones personalizadas
-- Búsqueda rápida y autocompletado de palabras
-- Sistema de etiquetas para categorizar y filtrar términos (#programacion, #abreviatura, etc.)
-- Historial de búsquedas recientes
-- Exportación e importación en formatos JSON, CSV y TXT
-- Interfaz intuitiva y moderna
-
-**Novedades en la versión 2.0:**
-- Sistema completo de etiquetas con autocompletado
-- Filtrado de palabras por etiquetas
-- Interfaz mejorada y más intuitiva
-- Búsqueda unificada y autocompletado
-- Exportación en múltiples formatos (JSON, CSV, TXT)
-- Historial de búsquedas recientes
-
-**Uso básico:**
-- Para abrir la extensión, presiona Ctrl+Q (Windows y macOS)
-- Escribe un término y su definición, añade etiquetas con el símbolo # y guárdalo
-- Filtra y organiza tus términos usando las etiquetas
-- Exporta tu diccionario para compartirlo con tu equipo
-
----
+# Personal Dictionary 2.0
 
 ## ENGLISH
 
@@ -61,6 +29,38 @@ Personal Dictionary is an extension that allows you to save and organize definit
 - Type a term and its definition, add tags with the # symbol, and save it
 - Filter and organize your terms using tags
 - Export your dictionary to share it with your team
+
+---
+
+## ESPAÑOL
+
+**Descripción breve:**
+Un diccionario personal para tus términos de trabajo y estudio.
+
+**Descripción general:**
+Diccionario Personal es una extensión que te permite guardar y organizar definiciones de palabras o términos que utilizas habitualmente en tu trabajo o estudios. Ideal para equipos que manejan terminología específica o para estudiantes que necesitan recordar conceptos clave.
+
+**Características principales:**
+- Guarda términos con sus definiciones personalizadas
+- Búsqueda rápida y autocompletado de palabras
+- Sistema de etiquetas para categorizar y filtrar términos (#programacion, #abreviatura, etc.)
+- Historial de búsquedas recientes
+- Exportación e importación en formatos JSON, CSV y TXT
+- Interfaz intuitiva y moderna
+
+**Novedades en la versión 2.0:**
+- Sistema completo de etiquetas con autocompletado
+- Filtrado de palabras por etiquetas
+- Interfaz mejorada y más intuitiva
+- Búsqueda unificada y autocompletado
+- Exportación en múltiples formatos (JSON, CSV, TXT)
+- Historial de búsquedas recientes
+
+**Uso básico:**
+- Para abrir la extensión, presiona Ctrl+Q (Windows y macOS)
+- Escribe un término y su definición, añade etiquetas con el símbolo # y guárdalo
+- Filtra y organiza tus términos usando las etiquetas
+- Exporta tu diccionario para compartirlo con tu equipo
 
 ---
 

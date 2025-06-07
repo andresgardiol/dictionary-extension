@@ -29,7 +29,7 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 	if (words.length === 0) {
 		const emptyMessage = document.createElement('div');
 		emptyMessage.className = 'empty-message';
-		emptyMessage.textContent = 'No hay palabras guardadas';
+		emptyMessage.textContent = 'No saved words';
 		wordsList.appendChild(emptyMessage);
 		return;
 	}
@@ -59,8 +59,8 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 		const emptyMessage = document.createElement('div');
 		emptyMessage.className = 'empty-message';
 		emptyMessage.textContent = tagFilter ? 
-			`No hay palabras con la etiqueta #${tagFilter}` : 
-			'No hay palabras que coincidan con la búsqueda';
+			`No words with tag #${tagFilter}` : 
+			'No words match your search';
 		wordsList.appendChild(emptyMessage);
 		return;
 	}
@@ -107,7 +107,7 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 		
 		const editBtn = document.createElement('button');
 		editBtn.className = 'small secondary';
-		editBtn.textContent = 'Editar';
+		editBtn.textContent = 'Edit';
 		editBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			wordInput.value = word;
@@ -120,14 +120,14 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 		
 		const deleteBtn = document.createElement('button');
 		deleteBtn.className = 'small warning';
-		deleteBtn.textContent = 'Borrar';
+		deleteBtn.textContent = 'Delete';
 		deleteBtn.addEventListener('click', async (e) => {
 			e.stopPropagation();
-			if (confirm(`¿Estás seguro de que deseas eliminar "${word}"?`)) {
+			if (confirm(`Are you sure you want to delete "${word}"?`)) {
 				const currentData = await loadData();
 				delete currentData[word];
 				await saveData(currentData);
-				showNotification(`"${word}" ha sido eliminado`, 'info');
+				showNotification(`"${word}" has been deleted`, 'info');
 				loadWordsList(wordlistFilter.value, tagFilter);
 				// Actualizar la lista de etiquetas
 				await loadTagsFilter();
@@ -169,7 +169,7 @@ function showTagFilterStatus(tag) {
 	const tagsFilterStatus = document.getElementById('tags-filter-status');
 	if (tag) {
 		tagsFilterStatus.innerHTML = `
-			Filtrando por: <span class="active-tag">#${tag}</span>
+			Filtering by: <span class="active-tag">#${tag}</span>
 			<button id="clear-tag-filter" class="clear-filter">×</button>
 		`;
 		tagsFilterStatus.classList.remove('hidden');
@@ -193,7 +193,7 @@ async function loadTagsFilter() {
 	tagsContainer.innerHTML = '';
 	
 	if (allTags.length === 0) {
-		tagsContainer.innerHTML = '<div class="empty-tags">No hay etiquetas disponibles</div>';
+		tagsContainer.innerHTML = '<div class="empty-tags">No tags available</div>';
 		return;
 	}
 	
@@ -308,7 +308,7 @@ const loadHistoryList = async () => {
 	if (history.length === 0) {
 		const emptyMessage = document.createElement('div');
 		emptyMessage.className = 'empty-message';
-		emptyMessage.textContent = 'No hay búsquedas recientes';
+		emptyMessage.textContent = 'No recent searches';
 		historyList.appendChild(emptyMessage);
 		return;
 	}
@@ -330,10 +330,10 @@ const loadHistoryList = async () => {
 
 // Limpiar historial
 clearHistoryBtn.addEventListener('click', async () => {
-	if (confirm('¿Estás seguro de que deseas limpiar todo el historial?')) {
+	if (confirm('Are you sure you want to clear all history?')) {
 		await saveHistory([]);
 		loadHistoryList();
-		showNotification('Historial limpiado', 'info');
+		showNotification('History cleared', 'info');
 	}
 });
 
@@ -346,7 +346,7 @@ form.addEventListener('submit', (event) => {
 			// Usar la nueva función saveWord para guardar con formato de etiquetas
 			const updatedData = saveWord(input, definitionTextArea.value, data);
 			saveData(updatedData).then(() => {
-				showNotification(`"${wordInput.value}" se ha guardado exitosamente`, 'success');
+				showNotification(`"${wordInput.value}" has been saved successfully`, 'success');
 				addToHistory(input);
 				wordInput.value = '';
 				definitionTextArea.value = '';
@@ -359,7 +359,7 @@ form.addEventListener('submit', (event) => {
 			});
 		});
 	} else {
-		showNotification('Por favor ingresa tanto la palabra como la definición', 'error');
+		showNotification('Please enter both word and definition', 'error');
 	}
 });
 
@@ -488,7 +488,7 @@ function showExistingTags(tags) {
 	// Mostrar el título
 	const titleElement = document.createElement('div');
 	titleElement.className = 'existing-tags-label';
-	titleElement.textContent = 'Etiquetas:';
+	titleElement.textContent = 'Tags:';
 	existingTagsContainer.appendChild(titleElement);
 	
 	// Añadir cada etiqueta
@@ -538,10 +538,10 @@ document.getElementById('export-json').addEventListener('click', (event) => {
 		// Opción 1: Exportar en formato nuevo (con etiquetas)
 		const dataString = JSON.stringify(data || {});
 		navigator.clipboard.writeText(dataString).then(() => {
-			showNotification('Datos exportados en formato JSON al portapapeles', 'success');
+			showNotification('Data exported in JSON format to clipboard', 'success');
 		}).catch((err) => {
-			console.log('Error al copiar datos al portapapeles', err);
-			showNotification('Error al exportar datos', 'error');
+			console.log('Error copying data to clipboard', err);
+			showNotification('Error exporting data', 'error');
 		});
 	});
 });
@@ -551,11 +551,11 @@ document.getElementById('export-csv').addEventListener('click', (event) => {
 	event.preventDefault();
 	loadData().then((data) => {
 		if (Object.keys(data).length === 0) {
-			showNotification('No hay datos para exportar', 'info');
+			showNotification('No data to export', 'info');
 			return;
 		}
 		
-		let csvContent = 'Palabra,Definición,Etiquetas\n';
+		let csvContent = 'Word,Definition,Tags\n';
 		
 		for (const word of Object.keys(data)) {
 			const wordData = loadWord(word, data);
@@ -571,10 +571,10 @@ document.getElementById('export-csv').addEventListener('click', (event) => {
 		}
 		
 		navigator.clipboard.writeText(csvContent).then(() => {
-			showNotification('Datos exportados en formato CSV al portapapeles', 'success');
+			showNotification('Data exported in CSV format to clipboard', 'success');
 		}).catch((err) => {
-			console.log('Error al copiar datos CSV al portapapeles', err);
-			showNotification('Error al exportar datos en CSV', 'error');
+			console.log('Error copying CSV data to clipboard', err);
+			showNotification('Error exporting data in CSV', 'error');
 		});
 	});
 });
@@ -584,7 +584,7 @@ document.getElementById('export-txt').addEventListener('click', (event) => {
 	event.preventDefault();
 	loadData().then((data) => {
 		if (Object.keys(data).length === 0) {
-			showNotification('No hay datos para exportar', 'info');
+			showNotification('No data to export', 'info');
 			return;
 		}
 		
@@ -598,10 +598,10 @@ document.getElementById('export-txt').addEventListener('click', (event) => {
 		}
 		
 		navigator.clipboard.writeText(txtContent).then(() => {
-			showNotification('Datos exportados en formato TXT al portapapeles', 'success');
+			showNotification('Data exported in TXT format to clipboard', 'success');
 		}).catch((err) => {
-			console.log('Error al copiar datos TXT al portapapeles', err);
-			showNotification('Error al exportar datos en TXT', 'error');
+			console.log('Error copying TXT data to clipboard', err);
+			showNotification('Error exporting data in TXT', 'error');
 		});
 	});
 });
@@ -612,13 +612,13 @@ document.getElementById('import-json').addEventListener('click', async (event) =
 	try {
 		const json = await navigator.clipboard.readText();
 		if (!json) {
-			showNotification('No hay datos en el portapapeles', 'error');
+			showNotification('No data in clipboard', 'error');
 			return;
 		}
 		
 		const data = JSON.parse(json);
 		if (typeof data !== 'object' || data === null) {
-			showNotification('Formato JSON inválido', 'error');
+			showNotification('Invalid JSON format', 'error');
 			return;
 		}
 		
@@ -626,15 +626,15 @@ document.getElementById('import-json').addEventListener('click', async (event) =
 		const newData = {...oldData, ...data};
 		
 		await saveData(newData);
-		showNotification(`Se importaron ${Object.keys(data).length} palabras correctamente`, 'success');
+		showNotification(`${Object.keys(data).length} words imported successfully`, 'success');
 		
 		// Actualizar la lista de palabras si está visible
 		if (document.getElementById('wordlist-tab').classList.contains('active')) {
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error al analizar datos JSON', err);
-		showNotification('Error al importar datos JSON', 'error');
+		console.log('Error parsing JSON data', err);
+		showNotification('Error importing JSON data', 'error');
 	}
 });
 
@@ -644,7 +644,7 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 	try {
 		const csvText = await navigator.clipboard.readText();
 		if (!csvText) {
-			showNotification('No hay datos en el portapapeles', 'error');
+			showNotification('No data in clipboard', 'error');
 			return;
 		}
 		
@@ -688,7 +688,7 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 		}
 		
 		if (count === 0) {
-			showNotification('No se encontraron datos válidos en CSV', 'error');
+			showNotification('No valid data found in CSV', 'error');
 			return;
 		}
 		
@@ -696,15 +696,15 @@ document.getElementById('import-csv').addEventListener('click', async (event) =>
 		const newData = {...oldData, ...data};
 		
 		await saveData(newData);
-		showNotification(`Se importaron ${count} palabras desde CSV`, 'success');
+		showNotification(`${count} words imported from CSV`, 'success');
 		
 		// Actualizar la lista de palabras si está visible
 		if (document.getElementById('wordlist-tab').classList.contains('active')) {
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error al analizar datos CSV', err);
-		showNotification('Error al importar datos CSV', 'error');
+		console.log('Error parsing CSV data', err);
+		showNotification('Error importing CSV data', 'error');
 	}
 });
 
@@ -714,7 +714,7 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 	try {
 		const txtText = await navigator.clipboard.readText();
 		if (!txtText) {
-			showNotification('No hay datos en el portapapeles', 'error');
+			showNotification('No data in clipboard', 'error');
 			return;
 		}
 		
@@ -739,7 +739,7 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 		}
 		
 		if (count === 0) {
-			showNotification('No se encontraron datos válidos en TXT', 'error');
+			showNotification('No valid data found in TXT', 'error');
 			return;
 		}
 		
@@ -747,15 +747,15 @@ document.getElementById('import-txt').addEventListener('click', async (event) =>
 		const newData = {...oldData, ...data};
 		
 		await saveData(newData);
-		showNotification(`Se importaron ${count} palabras desde TXT`, 'success');
+		showNotification(`${count} words imported from TXT`, 'success');
 		
 		// Actualizar la lista de palabras si está visible
 		if (document.getElementById('wordlist-tab').classList.contains('active')) {
 			loadWordsList();
 		}
 	} catch (err) {
-		console.log('Error al analizar datos TXT', err);
-		showNotification('Error al importar datos TXT', 'error');
+		console.log('Error parsing TXT data', err);
+		showNotification('Error importing TXT data', 'error');
 	}
 });
 
@@ -775,9 +775,9 @@ importButton.addEventListener('click', async (event) => {
 
 const deleteButton = document.getElementById('delete');
 deleteButton.addEventListener('click', (event) => {
-	if (confirm('¿Estás seguro de que deseas eliminar todos los datos?')) {
+	if (confirm('Are you sure you want to delete all data?')) {
 		deleteData();
-		showNotification('Todos los datos han sido eliminados', 'info');
+		showNotification('All data has been deleted', 'info');
 		// Actualizar la lista de palabras si está visible
 		if (document.getElementById('wordlist-tab').classList.contains('active')) {
 			loadWordsList();
@@ -884,7 +884,7 @@ async function showAvailableTagsPanel() {
 	if (allTags.length === 0) {
 		const noTagsMessage = document.createElement('div');
 		noTagsMessage.className = 'no-tags-message';
-		noTagsMessage.textContent = 'No hay etiquetas disponibles';
+		noTagsMessage.textContent = 'No tags available';
 		availableTagsContainer.appendChild(noTagsMessage);
 	} else {
 		// Añadir cada etiqueta al contenedor (sin título)
@@ -967,10 +967,10 @@ function filterAvailableTags(partialTag) {
 		
 		if (currentTags.length > 0) {
 			message.textContent = partialTag ? 
-				'No hay coincidencias disponibles' : 
-				'Ya estás usando todas las etiquetas disponibles';
+				'No matching tags available' : 
+				'You are already using all available tags';
 		} else {
-			message.textContent = 'No hay coincidencias';
+			message.textContent = 'No matches';
 		}
 		
 		availableTagsContainer.appendChild(message);
