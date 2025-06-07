@@ -11,7 +11,7 @@ const clearHistoryBtn = document.getElementById('clear-history');
 const MAX_HISTORY_ITEMS = 10;
 
 // Función para cargar y mostrar la lista de palabras
-const loadWordsList = async (filter = '') => {
+const loadWordsList = async (filter = '', tagFilter = null) => {
 	const data = await loadData();
 	const words = Object.keys(data);
 	
@@ -27,19 +27,72 @@ const loadWordsList = async (filter = '') => {
 	}
 	
 	// Filtrar y ordenar palabras
-	const filteredWords = filter 
-		? words.filter(word => word.toLowerCase().includes(filter.toLowerCase()))
-		: words;
+	let filteredWords = words;
 	
+	// Filtrar por texto si existe
+	if (filter) {
+		filteredWords = filteredWords.filter(word => 
+			word.toLowerCase().includes(filter.toLowerCase())
+		);
+	}
+	
+	// Filtrar por etiqueta si existe
+	if (tagFilter) {
+		filteredWords = filteredWords.filter(word => {
+			const wordData = loadWord(word, data);
+			return wordData && wordData.tags && wordData.tags.includes(tagFilter);
+		});
+	}
+	
+	// Ordenar alfabéticamente
 	filteredWords.sort((a, b) => a.localeCompare(b));
+	
+	if (filteredWords.length === 0) {
+		const emptyMessage = document.createElement('div');
+		emptyMessage.className = 'empty-message';
+		emptyMessage.textContent = tagFilter ? 
+			`No hay palabras con la etiqueta #${tagFilter}` : 
+			'No hay palabras que coincidan con la búsqueda';
+		wordsList.appendChild(emptyMessage);
+		return;
+	}
 	
 	filteredWords.forEach(word => {
 		const wordItem = document.createElement('div');
 		wordItem.className = 'word-item';
 		
+		const wordContainer = document.createElement('div');
+		wordContainer.className = 'word-container';
+		
 		const wordText = document.createElement('span');
+		wordText.className = 'word-text';
 		wordText.textContent = word;
-		wordItem.appendChild(wordText);
+		wordContainer.appendChild(wordText);
+		
+		// Añadir etiquetas si existen
+		const wordData = loadWord(word, data);
+		if (wordData && wordData.tags && wordData.tags.length > 0) {
+			const tagsContainer = document.createElement('div');
+			tagsContainer.className = 'tags-container';
+			
+			wordData.tags.forEach(tag => {
+				const tagElement = document.createElement('span');
+				tagElement.className = 'tag-pill';
+				tagElement.textContent = '#' + tag;
+				tagElement.addEventListener('click', (e) => {
+					e.stopPropagation();
+					// Filtrar por esta etiqueta
+					loadWordsList('', tag);
+					// Actualizar la interfaz para mostrar que estamos filtrando
+					showTagFilterStatus(tag);
+				});
+				tagsContainer.appendChild(tagElement);
+			});
+			
+			wordContainer.appendChild(tagsContainer);
+		}
+		
+		wordItem.appendChild(wordContainer);
 		
 		const wordActions = document.createElement('div');
 		wordActions.className = 'word-actions';
@@ -50,7 +103,9 @@ const loadWordsList = async (filter = '') => {
 		editBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			wordInput.value = word;
-			definitionTextArea.value = data[word];
+			// Cargar la definición con formato apropiado
+			const wordData = loadWord(word, data);
+			definitionTextArea.value = wordData ? wordData.definition : '';
 			switchTab('main');
 			wordInput.focus();
 		});
@@ -65,7 +120,9 @@ const loadWordsList = async (filter = '') => {
 				delete currentData[word];
 				await saveData(currentData);
 				showNotification(`"${word}" ha sido eliminado`, 'info');
-				loadWordsList(wordlistFilter.value);
+				loadWordsList(wordlistFilter.value, tagFilter);
+				// Actualizar la lista de etiquetas
+				await loadTagsFilter();
 			}
 		});
 		
@@ -76,7 +133,9 @@ const loadWordsList = async (filter = '') => {
 		// Añadir evento para cargar la palabra
 		wordItem.addEventListener('click', () => {
 			wordInput.value = word;
-			definitionTextArea.value = data[word];
+			// Cargar la definición con formato apropiado
+			const wordData = loadWord(word, data);
+			definitionTextArea.value = wordData ? wordData.definition : '';
 			switchTab('main');
 			addToHistory(word);
 		});
@@ -84,6 +143,51 @@ const loadWordsList = async (filter = '') => {
 		wordsList.appendChild(wordItem);
 	});
 };
+
+// Función para mostrar el estado de filtro de etiquetas
+function showTagFilterStatus(tag) {
+	const tagsFilterStatus = document.getElementById('tags-filter-status');
+	if (tag) {
+		tagsFilterStatus.innerHTML = `
+			Filtrando por: <span class="active-tag">#${tag}</span>
+			<button id="clear-tag-filter" class="clear-filter">×</button>
+		`;
+		tagsFilterStatus.classList.remove('hidden');
+		
+		// Agregar evento para limpiar el filtro
+		document.getElementById('clear-tag-filter').addEventListener('click', () => {
+			loadWordsList(wordlistFilter.value);
+			tagsFilterStatus.classList.add('hidden');
+		});
+	} else {
+		tagsFilterStatus.classList.add('hidden');
+	}
+}
+
+// Función para cargar las etiquetas en el filtro
+async function loadTagsFilter() {
+	const tagsContainer = document.getElementById('tags-filter');
+	if (!tagsContainer) return;
+	
+	const allTags = await loadAllTags();
+	tagsContainer.innerHTML = '';
+	
+	if (allTags.length === 0) {
+		tagsContainer.innerHTML = '<div class="empty-tags">No hay etiquetas disponibles</div>';
+		return;
+	}
+	
+	allTags.forEach(tag => {
+		const tagElement = document.createElement('span');
+		tagElement.className = 'filter-tag';
+		tagElement.textContent = '#' + tag;
+		tagElement.addEventListener('click', () => {
+			loadWordsList(wordlistFilter.value, tag);
+			showTagFilterStatus(tag);
+		});
+		tagsContainer.appendChild(tagElement);
+	});
+}
 
 // Función para manejar el sistema de pestañas
 const switchTab = (tabId) => {
@@ -100,9 +204,10 @@ const switchTab = (tabId) => {
 	document.querySelector(`.tab-button[data-tab="${tabId}"]`).classList.add('active');
 	document.getElementById(`${tabId}-tab`).classList.add('active');
 	
-	// Si es la pestaña de palabras, cargar la lista
+	// Si es la pestaña de palabras, cargar la lista y las etiquetas
 	if (tabId === 'wordlist') {
 		loadWordsList();
+		loadTagsFilter();
 	} else if (tabId === 'history') {
 		loadHistoryList();
 	}
@@ -117,7 +222,12 @@ document.querySelectorAll('.tab-button').forEach(tab => {
 
 // Filtrar la lista de palabras
 wordlistFilter.addEventListener('input', () => {
-	loadWordsList(wordlistFilter.value);
+	// Obtener el filtro de etiquetas activo (si hay)
+	const tagsFilterStatus = document.getElementById('tags-filter-status');
+	const activeTag = tagsFilterStatus && !tagsFilterStatus.classList.contains('hidden') ?
+		tagsFilterStatus.querySelector('.active-tag').textContent.substring(1) : null;
+		
+	loadWordsList(wordlistFilter.value, activeTag);
 });
 
 // Función para mostrar notificaciones
@@ -213,13 +323,19 @@ form.addEventListener('submit', (event) => {
 	if (wordInput.value && definitionTextArea.value) {
 		loadData().then((data) => {
 			const input = wordInput.value.toLowerCase();
-			data[input] = definitionTextArea.value;
-			saveData(data).then(() => {
+			// Usar la nueva función saveWord para guardar con formato de etiquetas
+			const updatedData = saveWord(input, definitionTextArea.value, data);
+			saveData(updatedData).then(() => {
 				showNotification(`"${wordInput.value}" se ha guardado exitosamente`, 'success');
 				addToHistory(input);
 				wordInput.value = '';
 				definitionTextArea.value = '';
 				wordInput.focus();
+				
+				// Actualizar lista de etiquetas si está visible
+				if (document.getElementById('wordlist-tab').classList.contains('active')) {
+					loadTagsFilter();
+				}
 			});
 		});
 	} else {
@@ -238,12 +354,19 @@ wordInput.addEventListener('input', (event) => {
 		const inputUpper = inputOriginal.toUpperCase();
 		const inputCapitalized = inputOriginal.charAt(0).toUpperCase() + inputOriginal.slice(1);
 
-		let definition = data[inputOriginal] || data[inputLower] || data[inputUpper] || data[inputCapitalized]
-		if (definition) {
-			if (typeof definition === 'object') {
-				definition = JSON.stringify(definition);
+		// Buscar coincidencias
+		let match = null;
+		if (data[inputOriginal]) match = inputOriginal;
+		else if (data[inputLower]) match = inputLower;
+		else if (data[inputUpper]) match = inputUpper;
+		else if (data[inputCapitalized]) match = inputCapitalized;
+		
+		if (match) {
+			// Cargar datos con formato apropiado
+			const wordData = loadWord(match, data);
+			if (wordData) {
+				definitionTextArea.value = wordData.definition;
 			}
-			definitionTextArea.value = definition;
 		} else {
 			definitionTextArea.value = '';
 		}
@@ -267,7 +390,11 @@ wordInput.addEventListener('input', (event) => {
 				resultElement.textContent = word;
 				resultElement.addEventListener('click', () => {
 					wordInput.value = word;
-					definitionTextArea.value = data[word];
+					// Cargar datos con formato apropiado
+					const wordData = loadWord(word, data);
+					if (wordData) {
+						definitionTextArea.value = wordData.definition;
+					}
 					searchResults.classList.add('hidden');
 					addToHistory(word);
 				});
@@ -290,6 +417,7 @@ document.addEventListener('click', (event) => {
 document.getElementById('export-json').addEventListener('click', (event) => {
 	event.preventDefault();
 	loadData().then((data) => {
+		// Opción 1: Exportar en formato nuevo (con etiquetas)
 		const dataString = JSON.stringify(data || {});
 		navigator.clipboard.writeText(dataString).then(() => {
 			showNotification('Datos exportados en formato JSON al portapapeles', 'success');
@@ -309,13 +437,19 @@ document.getElementById('export-csv').addEventListener('click', (event) => {
 			return;
 		}
 		
-		let csvContent = 'Palabra,Definición\n';
+		let csvContent = 'Palabra,Definición,Etiquetas\n';
 		
-		for (const [word, definition] of Object.entries(data)) {
+		for (const word of Object.keys(data)) {
+			const wordData = loadWord(word, data);
+			if (!wordData) continue;
+			
 			// Escapar comillas y procesar para formato CSV
 			const escapedWord = `"${word.replace(/"/g, '""')}"`;
-			const escapedDefinition = `"${definition.toString().replace(/"/g, '""')}"`;
-			csvContent += `${escapedWord},${escapedDefinition}\n`;
+			const escapedDefinition = `"${wordData.definition.replace(/"/g, '""')}"`;
+			const tags = wordData.tags && wordData.tags.length > 0 ? 
+				`"${wordData.tags.map(t => '#' + t).join(' ')}"` : '""';
+			
+			csvContent += `${escapedWord},${escapedDefinition},${tags}\n`;
 		}
 		
 		navigator.clipboard.writeText(csvContent).then(() => {
@@ -338,8 +472,11 @@ document.getElementById('export-txt').addEventListener('click', (event) => {
 		
 		let txtContent = '';
 		
-		for (const [word, definition] of Object.entries(data)) {
-			txtContent += `${word}\n${definition}\n\n`;
+		for (const word of Object.keys(data)) {
+			const wordData = loadWord(word, data);
+			if (!wordData) continue;
+			
+			txtContent += `${word}\n${wordData.definition}\n\n`;
 		}
 		
 		navigator.clipboard.writeText(txtContent).then(() => {
@@ -550,8 +687,136 @@ const deleteData = () => {
 	console.log("Datos eliminados exitosamente");
 }
 
+// Resaltar etiquetas en tiempo real al escribir
+definitionTextArea.addEventListener('input', function() {
+	// Resaltar etiquetas mientras el usuario escribe (solo visualmente)
+	const definitionText = this.value;
+	const formattedText = formatDefinitionWithTags(definitionText);
+	
+	// Si hay etiquetas, mostrar una pequeña nota informativa
+	const tagsPreview = document.getElementById('tags-preview');
+	const tags = extractTags(definitionText);
+	
+	if (tags.length > 0) {
+		tagsPreview.innerHTML = `<span class="tags-preview-label">Etiquetas:</span> ${tags.map(tag => `<span class="tag-preview">#${tag}</span>`).join(' ')}`;
+		tagsPreview.classList.remove('hidden');
+	} else {
+		tagsPreview.classList.add('hidden');
+	}
+});
+
 // Inicialización
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 	// Iniciar en la pestaña principal
 	switchTab('main');
+	
+	// Crear el contenedor de vista previa de etiquetas si no existe
+	if (!document.getElementById('tags-preview')) {
+		const tagsPreview = document.createElement('div');
+		tagsPreview.id = 'tags-preview';
+		tagsPreview.className = 'tags-preview hidden';
+		// Insertar después del textarea de definición
+		definitionTextArea.insertAdjacentElement('afterend', tagsPreview);
+	}
+	
+	// Verificar si necesitamos migrar datos (para usuarios existentes)
+	await checkDataFormat();
+	
+	// Cargar las etiquetas si está en la pestaña de palabras
+	if (document.getElementById('wordlist-tab').classList.contains('active')) {
+		await loadTagsFilter();
+	}
 });
+
+// Funciones para el manejo de etiquetas
+function extractTags(definition) {
+	const tagRegex = /#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g;
+	const matches = definition.match(tagRegex) || [];
+	return matches.map(tag => tag.substring(1)); // Eliminar el # del inicio
+}
+
+function formatDefinitionWithTags(definition) {
+	// Resaltar las etiquetas en el texto de la definición
+	return definition.replace(/#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g, '<span class="tag">#$1</span>');
+}
+
+// Función para cargar una palabra (compatible con ambos formatos)
+function loadWord(key, data) {
+	// Caso 1: Formato nuevo (objeto con definition y tags)
+	if (data[key] && typeof data[key] === 'object' && data[key].definition) {
+		return {
+			definition: data[key].definition,
+			tags: data[key].tags || []
+		};
+	}
+	
+	// Caso 2: Formato antiguo (string directo)
+	else if (data[key] && typeof data[key] === 'string') {
+		// Extraer etiquetas del texto existente si las hay
+		const definition = data[key];
+		const tags = extractTags(definition);
+		
+		return {
+			definition: definition,
+			tags: tags
+		};
+	}
+	
+	return null;
+}
+
+// Función para obtener datos de una palabra en formato consistente
+function getWordData(word, data) {
+	const wordData = loadWord(word, data);
+	if (!wordData) return null;
+	
+	return {
+		definition: wordData.definition,
+		tags: wordData.tags
+	};
+}
+
+// Función para guardar una palabra en el nuevo formato
+function saveWord(word, definition, data) {
+	// Extraer etiquetas del texto
+	const tags = extractTags(definition);
+	
+	// Guardar en nuevo formato
+	data[word] = {
+		definition: definition,
+		tags: tags
+	};
+	
+	return data;
+}
+
+// Verificar formato de datos al cargar
+async function checkDataFormat() {
+	const data = await loadData();
+	let needsMigration = false;
+	
+	// Verificar si hay al menos una entrada en formato antiguo
+	for (const word in data) {
+		if (typeof data[word] === 'string') {
+			needsMigration = true;
+			break;
+		}
+	}
+	
+	return data;
+}
+
+// Modificar la función para cargar todas las etiquetas únicas
+async function loadAllTags() {
+	const data = await loadData();
+	let allTags = new Set();
+	
+	for (const word in data) {
+		const wordData = loadWord(word, data);
+		if (wordData && wordData.tags) {
+			wordData.tags.forEach(tag => allTags.add(tag));
+		}
+	}
+	
+	return Array.from(allTags).sort();
+}

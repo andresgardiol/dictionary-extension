@@ -82,6 +82,23 @@
 				<input type="text" id="wordlist-filter" placeholder="Filtrar..." autocomplete="off"/>
 			</div>
 		</div>
+		
+		<!-- Filtro de etiquetas -->
+		<div class="tags-section">
+			<div class="tags-header">
+				<h4>Filtrar por etiquetas</h4>
+			</div>
+			<div id="tags-filter" class="tags-filter">
+				<!-- Las etiquetas se cargarán dinámicamente aquí -->
+				<div class="empty-tags">No hay etiquetas disponibles</div>
+			</div>
+		</div>
+		
+		<!-- Estado del filtro de etiquetas -->
+		<div id="tags-filter-status" class="tags-filter-status hidden">
+			<!-- Se mostrará el estado del filtro aquí -->
+		</div>
+		
 		<div id="words-list" class="words-list">
 			<!-- Las palabras se cargarán dinámicamente aquí -->
 			<div class="empty-message">No hay palabras guardadas</div>

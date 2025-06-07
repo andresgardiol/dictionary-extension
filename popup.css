@@ -386,7 +386,7 @@ button svg {
     cursor: pointer;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     transition: background-color 0.2s ease;
 }
 
@@ -457,4 +457,165 @@ button svg {
 
 .notification:not(.hidden) {
     animation: slideInDown 0.3s forwards;
+}
+
+/* Nuevos estilos para el sistema de etiquetas */
+.tag {
+    color: var(--accent-cyan);
+    font-weight: 500;
+}
+
+.tags-section {
+    margin-bottom: 1rem;
+}
+
+.tags-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.tags-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-gray);
+}
+
+.tags-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 12px;
+    background-color: var(--card-bg);
+    min-height: 2rem;
+}
+
+.filter-tag {
+    background: var(--blue-gradient);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.filter-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(64, 150, 255, 0.3);
+}
+
+.empty-tags {
+    width: 100%;
+    text-align: center;
+    color: var(--text-gray);
+    font-style: italic;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+}
+
+.tags-filter-status {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    background-color: rgba(174, 68, 240, 0.1);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tags-filter-status.hidden {
+    display: none;
+}
+
+.active-tag {
+    background-color: var(--accent-purple);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.clear-filter {
+    background: none;
+    border: none;
+    color: var(--text-white);
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    font-size: 1.2rem;
+    box-shadow: none;
+    margin: 0;
+}
+
+.clear-filter:hover {
+    color: var(--accent-purple);
+}
+
+.word-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.word-text {
+    font-weight: 500;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.tag-pill {
+    background-color: rgba(50, 212, 224, 0.2);
+    color: var(--accent-cyan);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.8rem;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-pill:hover {
+    background-color: rgba(50, 212, 224, 0.4);
+}
+
+/* Estilos para la vista previa de etiquetas */
+.tags-preview {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    background-color: rgba(50, 212, 224, 0.1);
+    font-size: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.tags-preview.hidden {
+    display: none;
+}
+
+.tags-preview-label {
+    color: var(--text-gray);
+    margin-right: 0.2rem;
+}
+
+.tag-preview {
+    background-color: rgba(50, 212, 224, 0.2);
+    color: var(--accent-cyan);
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-right: 0.2rem;
 }
