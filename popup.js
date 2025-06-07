@@ -6,6 +6,11 @@ const wordsList = document.getElementById('words-list');
 const wordlistFilter = document.getElementById('wordlist-filter');
 const historyList = document.getElementById('history-list');
 const clearHistoryBtn = document.getElementById('clear-history');
+const form = document.getElementById('form');
+
+// Variable para guardar el estado original de la definición
+let originalWord = '';
+let originalDefinition = '';
 
 // Historial de búsquedas - máximo 10 elementos
 const MAX_HISTORY_ITEMS = 10;
@@ -17,6 +22,10 @@ let currentTagEnd = -1;
 let tagSuggestions = [];
 let selectedSuggestionIndex = -1;
 let isWritingTag = false;
+
+// Variable para rastrear si estamos en modo búsqueda o edición
+let isSearchMode = false;
+let debounceTimer = null;
 
 // Función para cargar y mostrar la lista de palabras
 const loadWordsList = async (filter = '', tagFilter = null) => {
@@ -93,6 +102,8 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 					loadWordsList('', tag);
 					// Actualizar la interfaz para mostrar que estamos filtrando
 					showTagFilterStatus(tag);
+					// Cambiar a la pestaña de palabras
+					switchTab('wordlist');
 				});
 				tagsContainer.appendChild(tagElement);
 			});
@@ -155,6 +166,11 @@ const loadWordsList = async (filter = '', tagFilter = null) => {
 						filterAvailableTags('');
 					});
 				}
+				
+				// Actualizar valores originales para detectar cambios futuros
+				originalWord = word;
+				originalDefinition = wordData.definition;
+				form.classList.remove('has-changes');
 			}
 			switchTab('main');
 			addToHistory(word);
@@ -320,7 +336,29 @@ const loadHistoryList = async () => {
 		
 		historyItem.addEventListener('click', () => {
 			wordInput.value = word;
-			definitionTextArea.value = data[word] || '';
+			
+			// Cargar la definición con formato apropiado
+			const wordData = loadWord(word, data);
+			if (wordData) {
+				definitionTextArea.value = wordData.definition;
+				// Mostrar etiquetas existentes
+				showExistingTags(wordData.tags);
+				
+				// Actualizar valores originales para detectar cambios futuros
+				originalWord = word;
+				originalDefinition = wordData.definition;
+				form.classList.remove('has-changes');
+			} else {
+				definitionTextArea.value = '';
+				// Limpiar etiquetas existentes
+				showExistingTags([]);
+				
+				// Restablecer valores originales
+				originalWord = '';
+				originalDefinition = '';
+				form.classList.remove('has-changes');
+			}
+			
 			switchTab('main');
 		});
 		
@@ -337,7 +375,6 @@ clearHistoryBtn.addEventListener('click', async () => {
 	}
 });
 
-const form = document.getElementById('form');
 form.addEventListener('submit', (event) => {
 	event.preventDefault();
 	if (wordInput.value && definitionTextArea.value) {
@@ -348,6 +385,10 @@ form.addEventListener('submit', (event) => {
 			saveData(updatedData).then(() => {
 				showNotification(`"${wordInput.value}" has been saved successfully`, 'success');
 				addToHistory(input);
+				
+				// Actualizar valores originales para detectar cambios futuros
+				updateOriginalValues();
+				
 				wordInput.value = '';
 				definitionTextArea.value = '';
 				wordInput.focus();
@@ -363,9 +404,53 @@ form.addEventListener('submit', (event) => {
 	}
 });
 
-// Implementación de la búsqueda y autocompletado unificados en el campo de palabra
+// Función para verificar si hay cambios pendientes
+const checkForChanges = async () => {
+	const currentWord = wordInput.value.trim();
+	const currentDefinition = definitionTextArea.value.trim();
+	
+	// Cancelar cualquier timer pendiente
+	if (debounceTimer) {
+		clearTimeout(debounceTimer);
+	}
+	
+	// Realizar la verificación después de un pequeño retraso
+	debounceTimer = setTimeout(() => {
+		// Si estamos en modo búsqueda o no hay palabra, no mostrar indicador
+		if (isSearchMode || !currentWord) {
+			form.classList.remove('has-changes');
+			return false;
+		}
+		
+		// Si no hay definición pero hay palabra, considerar que hay cambios
+		if (currentWord && !currentDefinition) {
+			// Solo mostrar indicador si la palabra no coincide con la original (es nueva)
+			if (currentWord !== originalWord) {
+				form.classList.add('has-changes');
+				return true;
+			}
+			form.classList.remove('has-changes');
+			return false;
+		}
+		
+		// Si la palabra o definición actual es diferente a la original, hay cambios
+		if (currentWord !== originalWord || currentDefinition !== originalDefinition) {
+			form.classList.add('has-changes');
+			return true;
+		}
+		
+		// No hay cambios
+		form.classList.remove('has-changes');
+		return false;
+	}, 300); // Retraso de 300ms para evitar actualizaciones constantes
+};
+
+// Actualizar el evento de input para el campo de palabra
 wordInput.addEventListener('input', (event) => {
 	const searchTerm = wordInput.value.toLowerCase().trim();
+	
+	// Determinar si estamos en modo búsqueda
+	isSearchMode = true;
 	
 	// Buscar definición existente para autocompletar
 	loadData().then((data) => {
@@ -396,16 +481,34 @@ wordInput.addEventListener('input', (event) => {
 						filterAvailableTags('');
 					});
 				}
+				
+				// Actualizar valores originales para detectar cambios futuros
+				originalWord = match;
+				originalDefinition = wordData.definition;
+				
+				// Una vez que se carga una palabra existente, ya no estamos en modo búsqueda
+				isSearchMode = false;
+				checkForChanges();
 			}
 		} else {
 			definitionTextArea.value = '';
 			// Limpiar etiquetas existentes
 			showExistingTags([]);
+			// Restablecer valores originales
+			originalWord = '';
+			originalDefinition = '';
+			
+			// Si la palabra no existe y el campo de definición está vacío, seguimos en modo búsqueda
+			isSearchMode = definitionTextArea.value.trim() === '';
+			checkForChanges();
 		}
 		
 		// Mostrar resultados de búsqueda si hay al menos 2 caracteres
+		const searchContainer = document.getElementById('search-container');
+		
 		if (searchTerm.length < 2) {
 			searchResults.classList.add('hidden');
+			searchContainer.classList.remove('active');
 			return;
 		}
 		
@@ -416,36 +519,94 @@ wordInput.addEventListener('input', (event) => {
 		if (matchingWords.length > 0) {
 			searchResults.innerHTML = '';
 			searchResults.classList.remove('hidden');
+			searchContainer.classList.add('active');
 			
-			matchingWords.forEach(word => {
+			// Limitar el número máximo de resultados para evitar problemas de espacio
+			const maxResultsToShow = 4; // Reducir a solo 4 resultados para evitar recortes
+			const resultsToShow = matchingWords.slice(0, maxResultsToShow);
+			
+			// Crear elementos para cada resultado
+			resultsToShow.forEach((word, index) => {
 				const resultElement = document.createElement('div');
 				resultElement.textContent = word;
+				resultElement.style.opacity = '0';
+				resultElement.style.transform = 'translateY(10px)';
+				resultElement.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+				
 				resultElement.addEventListener('click', () => {
-					wordInput.value = word;
-					// Cargar datos con formato apropiado
-					const wordData = loadWord(word, data);
-					if (wordData) {
-						definitionTextArea.value = wordData.definition;
-						// Mostrar etiquetas existentes
-						showExistingTags(wordData.tags);
-						// Activar el panel de etiquetas disponibles si hay alguna
-						if (wordData.definition.includes('#')) {
-							isWritingTag = true;
-							showAvailableTagsPanel().then(() => {
-								// Filtrar las etiquetas para ocultar las que ya están en uso
-								filterAvailableTags('');
-							});
+					// Efecto visual al seleccionar
+					resultElement.style.backgroundColor = 'rgba(174, 68, 240, 0.4)';
+					resultElement.style.transform = 'scale(0.98)';
+					
+					// Pequeño retraso para mostrar el efecto visual antes de cerrar el dropdown
+					setTimeout(() => {
+						wordInput.value = word;
+						// Cargar datos con formato apropiado
+						const wordData = loadWord(word, data);
+						if (wordData) {
+							definitionTextArea.value = wordData.definition;
+							// Mostrar etiquetas existentes
+							showExistingTags(wordData.tags);
+							// Activar el panel de etiquetas disponibles si hay alguna
+							if (wordData.definition.includes('#')) {
+								isWritingTag = true;
+								showAvailableTagsPanel().then(() => {
+									// Filtrar las etiquetas para ocultar las que ya están en uso
+									filterAvailableTags('');
+								});
+							}
+							
+							// Actualizar valores originales para detectar cambios futuros
+							originalWord = word;
+							originalDefinition = wordData.definition;
+							
+							// Una vez que se selecciona una palabra existente, ya no estamos en modo búsqueda
+							isSearchMode = false;
+							form.classList.remove('has-changes');
 						}
-					}
-					searchResults.classList.add('hidden');
-					addToHistory(word);
+						searchResults.classList.add('hidden');
+						searchContainer.classList.remove('active');
+						addToHistory(word);
+					}, 150); // Retraso para ver el efecto visual
 				});
+				
+				// Agregar al principio para que aparezcan en orden correcto
 				searchResults.appendChild(resultElement);
+				
+				// Animar la aparición con un pequeño retraso basado en el índice
+				setTimeout(() => {
+					resultElement.style.opacity = '1';
+					resultElement.style.transform = 'translateY(0)';
+				}, 25 * index); // Reducir el retraso para que la animación sea más rápida
 			});
+			
+			// Si hay demasiados resultados, mostrar un indicador al final
+			if (matchingWords.length > maxResultsToShow) {
+				const moreResultsIndicator = document.createElement('div');
+				moreResultsIndicator.textContent = `+ ${matchingWords.length - maxResultsToShow} más...`;
+				moreResultsIndicator.style.textAlign = 'center';
+				moreResultsIndicator.style.fontSize = '0.85rem';
+				moreResultsIndicator.style.color = 'var(--text-gray)';
+				moreResultsIndicator.style.padding = '0.5rem 1rem';
+				moreResultsIndicator.style.borderTop = '1px dashed rgba(255, 255, 255, 0.1)';
+				moreResultsIndicator.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
+				moreResultsIndicator.style.marginTop = '4px';
+				searchResults.appendChild(moreResultsIndicator);
+			}
 		} else {
 			searchResults.classList.add('hidden');
+			searchContainer.classList.remove('active');
 		}
 	});
+});
+
+// Evento de cambio para el campo de definición
+definitionTextArea.addEventListener('input', function() {
+	// Si el usuario escribe en la definición, ya no estamos en modo búsqueda
+	isSearchMode = false;
+	checkForChanges();
+	// Ejecutar la funcionalidad existente de detección de etiquetas
+	detectTagWritingPanel(this);
 });
 
 // Función para mostrar etiquetas existentes
@@ -499,9 +660,14 @@ function showExistingTags(tags) {
 		const tagElement = document.createElement('span');
 		tagElement.className = 'existing-tag';
 		tagElement.textContent = '#' + tag;
-		// Al hacer clic en una etiqueta existente, insertarla en el cursor
+		// Al hacer clic en una etiqueta existente, cambiar a la pestaña de palabras y filtrar por esa etiqueta
 		tagElement.addEventListener('click', () => {
-			insertTagInTextarea(tag);
+			// Cambiar a la pestaña de palabras
+			switchTab('wordlist');
+			// Filtrar por esta etiqueta
+			loadWordsList('', tag);
+			// Actualizar la interfaz para mostrar que estamos filtrando
+			showTagFilterStatus(tag);
 		});
 		tagsContainer.appendChild(tagElement);
 	});
@@ -528,6 +694,7 @@ definitionTextArea.addEventListener('input', async function(e) {
 document.addEventListener('click', (event) => {
 	if (!searchResults.contains(event.target) && event.target !== wordInput) {
 		searchResults.classList.add('hidden');
+		document.getElementById('search-container').classList.remove('active');
 	}
 });
 
@@ -856,8 +1023,11 @@ async function detectTagWritingPanel(textarea) {
 		
 		partialTag = text.substring(hashPos + 1, tagEnd);
 		
+		// Sanitizar la etiqueta parcial antes de filtrar
+		const sanitizedPartialTag = sanitizeTag(partialTag);
+		
 		// Actualizar el filtro de etiquetas en el panel
-		filterAvailableTags(partialTag);
+		filterAvailableTags(sanitizedPartialTag);
 	} else {
 		// Si no hay un # cercano al cursor, mostrar todas las etiquetas sin filtrar
 		// pero ocultando las que ya están en uso
@@ -920,10 +1090,15 @@ function filterAvailableTags(partialTag) {
 	
 	const tagElements = availableTagsContainer.querySelectorAll('.available-tag');
 	let hasVisibleTags = false;
+	let hasExactMatches = false;
 	
 	// Eliminar cualquier mensaje previo
 	const prevMessage = availableTagsContainer.querySelector('.no-match-message');
 	if (prevMessage) prevMessage.remove();
+	
+	// Eliminar todos los mensajes de nueva etiqueta existentes
+	const prevNewTagMessages = availableTagsContainer.querySelectorAll('.no-exact-match-message');
+	prevNewTagMessages.forEach(el => el.remove());
 	
 	// Procesar cada etiqueta disponible
 	tagElements.forEach(el => {
@@ -935,7 +1110,7 @@ function filterAvailableTags(partialTag) {
 			return;
 		}
 		
-		// Si hay texto parcial, filtrar por coincidencia
+		// Si hay texto parcial, buscar coincidencias
 		if (partialTag && partialTag.trim() !== '') {
 			if (tag.toLowerCase().includes(partialTag.toLowerCase())) {
 				el.style.display = '';
@@ -947,43 +1122,49 @@ function filterAvailableTags(partialTag) {
 				
 				// Mover las coincidencias exactas al principio
 				if (tag.toLowerCase().startsWith(partialTag.toLowerCase())) {
+					hasExactMatches = true;
 					availableTagsContainer.insertBefore(el, availableTagsContainer.firstChild);
 				}
 			} else {
-				el.style.display = 'none';
+				// Aunque no coincida, mantenemos la etiqueta visible pero con opacidad reducida
+				el.style.display = '';
+				el.textContent = '#' + tag;
+				el.classList.add('tag-no-match');
+				hasVisibleTags = true;
 			}
 		} else {
 			// Si no hay texto parcial, mostrar todas excepto las ya usadas
 			el.style.display = '';
 			el.textContent = '#' + tag;
+			el.classList.remove('tag-no-match');
 			hasVisibleTags = true;
 		}
 	});
 	
-	// Si no hay etiquetas visibles, mostrar un mensaje
+	// Si no hay etiquetas visibles (todas están en uso), mostrar mensaje
 	if (!hasVisibleTags && tagElements.length > 0) {
 		const message = document.createElement('div');
 		message.className = 'no-match-message';
-		
-		if (currentTags.length > 0) {
-			message.textContent = partialTag ? 
-				'No matching tags available' : 
-				'You are already using all available tags';
-		} else {
-			message.textContent = 'No matches';
-		}
-		
+		message.textContent = 'You are already using all available tags';
 		availableTagsContainer.appendChild(message);
 	}
 }
 
+// Función para sanitizar etiquetas (permitir solo caracteres alfanuméricos y algunos especiales)
+function sanitizeTag(tag) {
+	// Eliminar caracteres no permitidos
+	return tag.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_\-]/g, '')
+		// Asegurar que no esté vacío después de sanitizar
+		.trim();
+}
+
 // Función para extraer etiquetas únicas de una definición (para evitar duplicados)
 function extractTags(definition) {
-	const tagRegex = /#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g;
+	const tagRegex = /#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_\-]+)/g;
 	const matches = definition.match(tagRegex) || [];
 	
-	// Eliminar duplicados manteniendo solo la primera aparición de cada etiqueta
-	const uniqueTags = [...new Set(matches.map(tag => tag.substring(1)))];
+	// Sanitizar y eliminar duplicados manteniendo solo la primera aparición de cada etiqueta
+	const uniqueTags = [...new Set(matches.map(tag => sanitizeTag(tag.substring(1))))].filter(tag => tag !== '');
 	return uniqueTags;
 }
 
@@ -993,7 +1174,7 @@ function formatDefinitionWithTags(definition) {
 	const seenTags = new Set();
 	
 	// Reemplazamos cada etiqueta, pero rastreamos cuáles ya hemos visto
-	return definition.replace(/#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)/g, (match, tag) => {
+	return definition.replace(/#([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_\-]+)/g, (match, tag) => {
 		// Si ya hemos visto esta etiqueta, aplicar un estilo diferente
 		if (seenTags.has(tag.toLowerCase())) {
 			return `<span class="tag tag-duplicate">${match}</span>`;
@@ -1128,6 +1309,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// Iniciar en la pestaña principal
 	switchTab('main');
 	
+	// Inicializar en modo búsqueda por defecto
+	isSearchMode = true;
+	
 	// Crear el contenedor de vista previa de etiquetas si no existe
 	if (!document.getElementById('tags-preview')) {
 		const tagsPreview = document.createElement('div');
@@ -1151,11 +1335,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 			const word = wordInput.value;
 			if (data[word]) {
 				const wordData = loadWord(word, data);
-				if (wordData && wordData.tags) {
+				if (wordData) {
+					definitionTextArea.value = wordData.definition;
 					showExistingTags(wordData.tags);
+					
+					// Actualizar valores originales
+					originalWord = word;
+					originalDefinition = wordData.definition;
+					
+					// Si cargamos una definición, ya no estamos en modo búsqueda
+					isSearchMode = false;
+					form.classList.remove('has-changes');
 				}
 			}
 		});
+	} else {
+		// Si no hay palabra, inicializar valores originales
+		originalWord = '';
+		originalDefinition = '';
+		form.classList.remove('has-changes');
 	}
 });
 
@@ -1167,6 +1365,12 @@ function hideAvailableTagsPanel() {
 
 // Función para insertar una etiqueta en el textarea
 function insertTagInTextarea(tag) {
+	// Sanitizar la etiqueta antes de insertarla
+	tag = sanitizeTag(tag);
+	
+	// Si después de sanitizar está vacía, no hacer nada
+	if (!tag) return;
+	
 	// Obtener la posición actual del cursor
 	const cursorPos = definitionTextArea.selectionStart;
 	const text = definitionTextArea.value;
@@ -1225,3 +1429,11 @@ function insertTagInTextarea(tag) {
 	// Mantener el foco en el textarea
 	definitionTextArea.focus();
 }
+
+// Función para actualizar las palabras originales después de cargar o guardar
+const updateOriginalValues = () => {
+	originalWord = wordInput.value.trim();
+	originalDefinition = definitionTextArea.value.trim();
+	// Quitar indicador de cambios
+	form.classList.remove('has-changes');
+};

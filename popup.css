@@ -17,7 +17,7 @@ body {
     width: 24rem;
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 12px 0 0 0;
     background-color: var(--bg-dark);
     color: var(--text-white);
     line-height: 1.5;
@@ -30,6 +30,7 @@ body {
     align-items: center;
     position: relative;
     padding: 0 1rem;
+    margin-top: 0px;
 }
 
 h1 {
@@ -63,6 +64,26 @@ h3 {
     background-repeat: no-repeat;
     background-position: 1rem center;
     background-size: 1rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#word:focus {
+    border-color: rgba(174, 68, 240, 0.3);
+    box-shadow: 0 0 0 2px rgba(174, 68, 240, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#word::placeholder {
+    color: var(--text-gray);
+    opacity: 0.7;
+}
+
+/* Cuando hay resultados de búsqueda activos, cambiar el estilo del input */
+#search-container.active #word {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Style input */
@@ -192,14 +213,32 @@ button svg {
 
 #search-results {
     width: 100%;
-    max-height: 200px;
+    max-height: 180px;
     overflow-y: auto;
-    border-radius: 12px;
+    border-radius: 10px;
     background-color: var(--card-bg);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.35), 0 -5px 10px rgba(0, 0, 0, 0.22);
     position: absolute;
-    z-index: 10;
+    z-index: 100;
     box-sizing: border-box;
+    left: 0;
+    bottom: 100%;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: dropdownFadeIn 0.2s ease-out;
+    padding: 14px 0 8px 0;
+    transform: translateY(-3px);
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-3px);
+    }
 }
 
 #search-results.hidden {
@@ -210,14 +249,44 @@ button svg {
     padding: 0.7rem 1rem;
     cursor: pointer;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: visible;
+    margin: 0 3px;
+}
+
+#search-results div:first-child {
+    margin-top: 4px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 #search-results div:last-child {
     border-bottom: none;
+    margin-bottom: 4px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 #search-results div:hover {
     background-color: rgba(174, 68, 240, 0.2);
+    transform: translateX(5px);
+}
+
+/* Añadir un indicador de selección (chevron) */
+#search-results div::after {
+    content: '›';
+    position: absolute;
+    right: 15px;
+    opacity: 0;
+    font-size: 1.2rem;
+    color: var(--accent-purple);
+    transition: all 0.2s ease;
+}
+
+#search-results div:hover::after {
+    opacity: 1;
+    right: 10px;
 }
 
 /* Styles for notifications */
@@ -787,10 +856,77 @@ button svg {
 }
 
 .existing-tag {
-    background-color: rgba(64, 150, 255, 0.2);
-    color: var(--accent-blue);
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.8rem;
-    font-size: 0.75rem;
+    display: inline-block;
+    background: #2c3366;
+    color: var(--text-white);
+    border-radius: 16px;
+    padding: 0.3rem 0.7rem;
+    margin: 0.3rem;
+    font-size: 0.85rem;
     font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.existing-tag:hover {
+    background: var(--purple-gradient);
+    box-shadow: 0 2px 8px rgba(174, 68, 240, 0.3);
+    transform: translateY(-1px);
+}
+
+.existing-tag::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--text-white);
+    margin-left: 6px;
+    opacity: 0.7;
+    vertical-align: middle;
+}
+
+.existing-tag:hover::after {
+    opacity: 1;
+}
+
+/* Etiquetas sin coincidencia exacta */
+.tag-no-match {
+    opacity: 0.5;
+    background: #333964;
+    position: relative;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.tag-no-match:hover {
+    opacity: 1;
+    background: #3e4479;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+/* Indicador de cambios no guardados */
+#form.has-changes::after {
+    content: 'Unsaved changes';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: var(--accent-purple);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 16px;
+    opacity: 0.9;
+    animation: pulse 1.5s infinite;
+    z-index: 10;
+}
+
+#form {
+    position: relative;
+    padding: 1rem;
 }

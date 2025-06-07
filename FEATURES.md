@@ -7,3 +7,7 @@
 7. Sincronización entre dispositivos: Guardar el diccionario en la nube (con Google Drive o similar). Permitir sincronizar entre diferentes navegadores/dispositivos
 8. Integración con herramientas de productividad: Exportación a sistemas como Anki, Notion, etc. API para que otras extensiones puedan interactuar con el diccionario
 9. Si una definición contiene una palabra que ya ha sido definida, debería o abrirse un popup con la definición de la palabra (al estilo de wikipedia) o al clickear la palabra ir a su definición.
+10. página web con diccionarios para importar, diccionarios financieros, de programación, etc
+11. la feature de importar diccionarios debe hacer un merge de las definiciones existentes, colocando la definición existente arriba y la nueva definición del mismo término abajo.
+12. hacer una Landing page del plugin
+13. hacer video tutorial de YouTube del plugin
