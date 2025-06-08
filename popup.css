@@ -105,6 +105,17 @@ input:focus {
     box-shadow: 0 0 0 2px rgba(174, 68, 240, 0.4);
 }
 
+/* Empty field validation styling */
+input:invalid:not(:focus):not(:placeholder-shown) {
+    border: 1px solid rgba(255, 79, 86, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 79, 86, 0.2);
+}
+
+textarea:invalid:not(:focus):not(:placeholder-shown) {
+    border: 1px solid rgba(255, 79, 86, 0.5);
+    box-shadow: 0 0 0 1px rgba(255, 79, 86, 0.2);
+}
+
 /* Enhanced focus for inputs */
 input:focus {
     outline: 3px solid var(--accent-cyan);
@@ -1040,7 +1051,10 @@ button svg {
     opacity: 0.9;
     animation: pulse 1.5s infinite;
     z-index: 10;
+    box-shadow: 0 2px 8px rgba(174, 68, 240, 0.3);
 }
+
+
 
 #form {
     position: relative;
@@ -1215,14 +1229,24 @@ button svg {
 }
 
 .related-count {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-gray);
+    background: rgba(50, 212, 224, 0.2);
+    color: var(--accent-cyan);
     padding: 0.1rem 0.3rem;
     border-radius: 8px;
     font-size: 0.7rem;
-    font-weight: 500;
+    font-weight: 600;
     min-width: 16px;
     text-align: center;
+    animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { 
+        background: rgba(50, 212, 224, 0.2);
+    }
+    50% { 
+        background: rgba(50, 212, 224, 0.3);
+    }
 }
 
 .related-words-list {
@@ -1245,9 +1269,11 @@ button svg {
 }
 
 .related-word-item:hover {
-    background: rgba(174, 68, 240, 0.2);
-    border-color: rgba(174, 68, 240, 0.3);
+    background: rgba(174, 68, 240, 0.25);
+    border-color: rgba(174, 68, 240, 0.4);
     color: var(--text-white);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(174, 68, 240, 0.2);
 }
 
 .related-word-item:active {

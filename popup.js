@@ -668,6 +668,8 @@ wordInput.addEventListener('input', (event) => {
 definitionTextArea.addEventListener('input', function() {
 	// Si el usuario escribe en la definición, ya no estamos en modo búsqueda
 	isSearchMode = false;
+	
+
 	checkForChanges();
 	// Ejecutar la funcionalidad existente de detección de etiquetas
 	detectTagWritingPanel(this);
@@ -804,7 +806,6 @@ document.getElementById('export-csv').addEventListener('click', (event) => {
 		navigator.clipboard.writeText(csvContent).then(() => {
 			showNotification('Data exported in CSV format to clipboard', 'success');
 		}).catch((err) => {
-			console.log('Error copying CSV data to clipboard', err);
 			showNotification('Error exporting data in CSV', 'error');
 		});
 	});
@@ -857,15 +858,12 @@ importButton.addEventListener('click', async (event) => {
 		return;
 		}
 		
-		console.log('Starting import with automatic detection...');
 		const result = await processAutoImport(clipboardData);
 		
 		if (!result.success && result.message) {
 			// Notification already shown in processAutoImport, don't show another
-			console.log('Import failed:', result.message);
 		}
 	} catch (err) {
-		console.error('Error accessing clipboard:', err);
 		showNotification('Error accessing clipboard. Make sure you have data copied.', 'error');
 	}
 });
@@ -883,11 +881,7 @@ deleteButton.addEventListener('click', (event) => {
 });
 
 const saveData = (data) => {
-	return chrome.storage.local.set({data: data})
-		.then(() => {
-					console.log("Data saved successfully");
-		return data;
-		});
+	return chrome.storage.local.set({data: data});
 }
 
 const loadData = () => {
@@ -899,7 +893,6 @@ const loadData = () => {
 
 const deleteData = () => {
 	chrome.storage.local.clear();
-	console.log("Data deleted successfully");
 }
 
 // Función para detectar si estamos escribiendo una etiqueta y mostrar el panel
@@ -1933,7 +1926,7 @@ async function processAutoImport(data) {
 		return { success: false, message: detection.error };
 	}
 	
-	console.log(`Detected format: ${detection.format.toUpperCase()}`);
+
 	
 	// Process according to detected format
 	let importedData = {};
@@ -1968,7 +1961,6 @@ async function processAutoImport(data) {
 		return result;
 		
 	} catch (error) {
-		console.error('Error processing data:', error);
 		const errorMessage = `Error processing ${detection.format.toUpperCase()} data: ${error.message}`;
 		showNotification(errorMessage, 'error');
 		return { success: false, message: errorMessage };
@@ -2052,53 +2044,4 @@ async function parseTXTData(txtText) {
 	return data;
 }
 
-// Test function for modal (debug only)
-window.testMergeModal = function() {
-	console.log('Starting modal test...');
-	
-	// Verify modal exists before test
-	const modal = document.getElementById('merge-modal');
-	console.log('Modal element:', modal);
-	
-	// Verify buttons
-	const cancelBtn = document.getElementById('merge-cancel');
-	const proceedBtn = document.getElementById('merge-proceed');
-	const closeBtn = document.getElementById('merge-close');
-	console.log('Buttons found:', { cancel: !!cancelBtn, proceed: !!proceedBtn, close: !!closeBtn });
-	
-	if (!modal || !cancelBtn || !proceedBtn || !closeBtn) {
-		console.error('Modal or buttons not found');
-		return;
-	}
-	
-	const testConflicts = [
-		{
-			word: 'test',
-			existing: 'Existing definition for test',
-			new: 'New imported definition'
-		}
-	];
-	const testNewWords = ['new1', 'new2'];
-	const testData = { test: 'new def', new1: 'def1', new2: 'def2' };
-	
-	showMergeModal(testConflicts, testNewWords, testData, 'json')
-		.then(result => {
-			console.log('Modal result:', result);
-		})
-		.catch(error => {
-			console.error('Modal error:', error);
-		});
-};
 
-// Simple function to show modal without logic
-window.showModalSimple = function() {
-	const modal = document.getElementById('merge-modal');
-	if (modal) {
-		modal.classList.remove('hidden');
-		console.log('Modal shown directly');
-	} else {
-		console.error('Modal not found');
-	}
-};
-
-console.log('Modal test functions loaded. Run window.testMergeModal() or window.showModalSimple() to test.');
