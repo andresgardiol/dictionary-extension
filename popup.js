@@ -511,6 +511,8 @@ wordInput.addEventListener('input', (event) => {
 				definitionTextArea.value = wordData.definition;
 				// Mostrar etiquetas existentes
 				showExistingTags(wordData.tags);
+				// Show related words
+				updateRelatedWordsDisplay(wordData.definition, data, wordInput.value);
 				// Activar el panel de etiquetas disponibles si hay alguna
 				if (wordData.definition.includes('#')) {
 					isWritingTag = true;
@@ -532,6 +534,11 @@ wordInput.addEventListener('input', (event) => {
 			definitionTextArea.value = '';
 			// Limpiar etiquetas existentes
 			showExistingTags([]);
+			// Hide related words section
+			const relatedWordsSection = document.getElementById('related-words');
+			if (relatedWordsSection) {
+				relatedWordsSection.classList.add('hidden');
+			}
 			// Restablecer valores originales
 			originalWord = '';
 			originalDefinition = '';
@@ -591,6 +598,8 @@ wordInput.addEventListener('input', (event) => {
 							definitionTextArea.value = wordData.definition;
 							// Mostrar etiquetas existentes
 							showExistingTags(wordData.tags);
+							// Show related words
+							updateRelatedWordsDisplay(wordData.definition, data, word);
 							// Activar el panel de etiquetas disponibles si hay alguna
 							if (wordData.definition.includes('#')) {
 								isWritingTag = true;
@@ -1107,9 +1116,9 @@ function formatDefinitionWithTags(definition) {
 	});
 }
 
-// Función para cargar una palabra (compatible con ambos formatos)
+// Function to load a word (compatible with both formats)
 function loadWord(key, data) {
-	// Caso 1: Formato nuevo (objeto con definition y tags)
+	// Case 1: New format (object with definition and tags)
 	if (data[key] && typeof data[key] === 'object' && data[key].definition) {
 		return {
 			definition: data[key].definition,
@@ -1117,9 +1126,9 @@ function loadWord(key, data) {
 		};
 	}
 	
-	// Caso 2: Formato antiguo (string directo)
+	// Case 2: Old format (direct string)
 	else if (data[key] && typeof data[key] === 'string') {
-		// Extraer etiquetas del texto existente si las hay
+		// Extract tags from existing text if any
 		const definition = data[key];
 		const tags = extractTags(definition);
 		
@@ -1131,6 +1140,205 @@ function loadWord(key, data) {
 	
 	return null;
 }
+
+// Function to find related words that exist in the dictionary
+function findRelatedWords(definition, dictionary, currentWord = '') {
+	const words = Object.keys(dictionary);
+	if (words.length === 0) return [];
+	
+	// Exclude the current word being viewed
+	const otherWords = words.filter(word => word.toLowerCase() !== currentWord.toLowerCase());
+	
+	// Sort words by length (longest first) to prioritize longer matches
+	const sortedWords = otherWords.sort((a, b) => b.length - a.length);
+	
+	const foundWords = [];
+	const usedWords = new Set();
+	
+	sortedWords.forEach(word => {
+		// Skip if we already found this word
+		if (usedWords.has(word.toLowerCase())) return;
+		
+		// Create regex to match whole words only (case insensitive)
+		const regex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+		
+		// Check if word exists in definition but not inside tags
+		const matches = [...definition.matchAll(regex)];
+		
+		matches.forEach(match => {
+			const beforeMatch = definition.substring(0, match.index);
+			const lastHashIndex = beforeMatch.lastIndexOf('#');
+			const lastSpaceIndex = beforeMatch.lastIndexOf(' ');
+			
+			// If # appears after the last space, we're inside a tag - skip
+			if (lastHashIndex > lastSpaceIndex && lastHashIndex !== -1) {
+				return;
+			}
+			
+			// Add to found words if not already added
+			if (!usedWords.has(word.toLowerCase())) {
+				foundWords.push(word);
+				usedWords.add(word.toLowerCase());
+			}
+		});
+	});
+	
+	return foundWords;
+}
+
+// Function to show word definition tooltip
+function showWordTooltip(wordElement, word, definition) {
+	// Remove any existing tooltips
+	hideWordTooltip();
+	
+	const tooltip = document.createElement('div');
+	tooltip.className = 'word-tooltip';
+	tooltip.innerHTML = `
+		<div class="tooltip-header">
+			<strong>${word}</strong>
+			<button class="tooltip-close" aria-label="Close tooltip">×</button>
+		</div>
+		<div class="tooltip-content">${definition}</div>
+		<div class="tooltip-footer">
+			<button class="tooltip-edit" data-word="${word}">Edit this word</button>
+		</div>
+	`;
+	
+	// Position tooltip
+	const rect = wordElement.getBoundingClientRect();
+	tooltip.style.position = 'fixed';
+	tooltip.style.top = (rect.bottom + 8) + 'px';
+	tooltip.style.left = rect.left + 'px';
+	tooltip.style.zIndex = '1000';
+	
+	document.body.appendChild(tooltip);
+	
+	// Add event listeners
+	tooltip.querySelector('.tooltip-close').addEventListener('click', hideWordTooltip);
+	tooltip.querySelector('.tooltip-edit').addEventListener('click', (e) => {
+		const targetWord = e.target.getAttribute('data-word');
+		loadWordIntoForm(targetWord);
+		hideWordTooltip();
+	});
+	
+	// Close tooltip when clicking outside
+	setTimeout(() => {
+		document.addEventListener('click', hideWordTooltipOnClickOutside);
+	}, 100);
+}
+
+// Function to hide word tooltip
+function hideWordTooltip() {
+	const existingTooltip = document.querySelector('.word-tooltip');
+	if (existingTooltip) {
+		existingTooltip.remove();
+		document.removeEventListener('click', hideWordTooltipOnClickOutside);
+	}
+}
+
+// Function to hide tooltip when clicking outside
+function hideWordTooltipOnClickOutside(e) {
+	if (!e.target.closest('.word-tooltip') && !e.target.closest('.word-link')) {
+		hideWordTooltip();
+	}
+}
+
+// Function to load a word into the main form
+async function loadWordIntoForm(word) {
+	const data = await loadData();
+	const wordData = loadWord(word, data);
+	
+	if (wordData) {
+		wordInput.value = word;
+		definitionTextArea.value = wordData.definition;
+		showExistingTags(wordData.tags);
+		
+		// Show related words
+		updateRelatedWordsDisplay(wordData.definition, data, word);
+		
+		// Show available tags panel if needed
+		if (wordData.definition.includes('#')) {
+			isWritingTag = true;
+			showAvailableTagsPanel().then(() => {
+				filterAvailableTags('');
+			});
+		}
+		
+		// Update original values
+		originalWord = word;
+		originalDefinition = wordData.definition;
+		form.classList.remove('has-changes');
+		
+		// Switch to main tab
+		switchTab('main');
+		addToHistory(word);
+	}
+}
+
+// Function to update related words display
+async function updateRelatedWordsDisplay(definition, data = null, currentWord = '') {
+	if (!data) {
+		data = await loadData();
+	}
+	
+	const relatedWordsSection = document.getElementById('related-words');
+	const relatedWordsList = document.getElementById('related-words-list');
+	const relatedCount = document.getElementById('related-count');
+	
+	if (!definition || !definition.trim()) {
+		relatedWordsSection.classList.add('hidden');
+		return;
+	}
+	
+	// Find related words
+	const relatedWords = findRelatedWords(definition, data, currentWord);
+	
+	// Update count
+	relatedCount.textContent = relatedWords.length;
+	
+	// Only show if there are related words
+	if (relatedWords.length > 0) {
+		relatedWordsList.innerHTML = '';
+		
+		relatedWords.forEach(word => {
+			const wordItem = document.createElement('button');
+			wordItem.className = 'related-word-item';
+			wordItem.textContent = word;
+			wordItem.setAttribute('data-word', word);
+			wordItem.setAttribute('aria-label', `Go to definition of ${word}`);
+			
+			// Click event - load word into form
+			wordItem.addEventListener('click', (e) => {
+				e.preventDefault();
+				loadWordIntoForm(word);
+			});
+			
+			// Hover event - show tooltip
+			wordItem.addEventListener('mouseenter', async (e) => {
+				const wordData = loadWord(word, data);
+				if (wordData) {
+					showWordTooltip(wordItem, word, wordData.definition);
+				}
+			});
+			
+			// Keyboard accessibility
+			wordItem.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					loadWordIntoForm(word);
+				}
+			});
+			
+			relatedWordsList.appendChild(wordItem);
+		});
+		
+		relatedWordsSection.classList.remove('hidden');
+	} else {
+		relatedWordsSection.classList.add('hidden');
+	}
+}
+
+// Function setupWordLinkEvents removed - no longer needed with new approach
 
 // Función para obtener datos de una palabra en formato consistente
 function getWordData(word, data) {
@@ -1242,6 +1450,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 		definitionTextArea.insertAdjacentElement('afterend', tagsPreview);
 	}
 	
+	// No need for toggle button anymore - related words show automatically
+	
 	// Verificar si necesitamos migrar datos (para usuarios existentes)
 	await checkDataFormat();
 	
@@ -1259,6 +1469,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 				if (wordData) {
 					definitionTextArea.value = wordData.definition;
 					showExistingTags(wordData.tags);
+					
+					// Show related words
+					updateRelatedWordsDisplay(wordData.definition, data, word);
 					
 					// Actualizar valores originales
 					originalWord = word;

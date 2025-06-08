@@ -1077,6 +1077,183 @@ button svg {
     }
 }
 
+/* Styles for linked words (Feature #9) */
+.word-link {
+    color: var(--accent-cyan);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    transition: all 0.2s ease;
+    padding: 1px 2px;
+    border-radius: 3px;
+}
+
+.word-link:hover {
+    background-color: rgba(50, 212, 224, 0.2);
+    text-decoration-style: solid;
+    transform: translateY(-1px);
+}
+
+/* Word tooltip styles */
+.word-tooltip {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border: 1px solid rgba(50, 212, 224, 0.3);
+    border-radius: 12px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.6),
+        0 8px 16px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(50, 212, 224, 0.2);
+    max-width: 320px;
+    min-width: 250px;
+    overflow: hidden;
+    animation: tooltipSlideIn 0.2s ease-out;
+    z-index: 1000;
+}
+
+@keyframes tooltipSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tooltip-header {
+    background: rgba(50, 212, 224, 0.1);
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid rgba(50, 212, 224, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tooltip-header strong {
+    color: var(--accent-cyan);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.tooltip-close {
+    background: none;
+    border: none;
+    color: var(--text-gray);
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.tooltip-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--accent-cyan);
+    transform: scale(1.1);
+}
+
+.tooltip-content {
+    padding: 1rem;
+    color: var(--text-white);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.tooltip-footer {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.6rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-edit {
+    background: var(--blue-gradient);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    margin: 0;
+}
+
+.tooltip-edit:hover {
+    box-shadow: 0 4px 12px rgba(64, 150, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Related words section - minimal design */
+.related-words {
+    margin-bottom: 0.8rem;
+    font-size: 0.8rem;
+}
+
+.related-words.hidden {
+    display: none;
+}
+
+.related-words-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+    color: var(--text-gray);
+    font-size: 0.75rem;
+}
+
+.related-count {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-gray);
+    padding: 0.1rem 0.3rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    min-width: 16px;
+    text-align: center;
+}
+
+.related-words-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.related-word-item {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-white);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+.related-word-item:hover {
+    background: rgba(174, 68, 240, 0.2);
+    border-color: rgba(174, 68, 240, 0.3);
+    color: var(--text-white);
+}
+
+.related-word-item:active {
+    background: rgba(174, 68, 240, 0.3);
+}
+
 /* Modal styles para merge inteligente */
 .modal {
     position: fixed;
