@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Personal Dictionary",
   "description": "A personal dictionary for your work terms",
-  "version": "2.1",
+  "version": "2.2",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

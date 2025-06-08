@@ -1,4 +1,4 @@
-# Personal Dictionary 2.0
+# Personal Dictionary 2.2
 
 ## ENGLISH
 
@@ -16,13 +16,10 @@ Personal Dictionary is an extension that allows you to save and organize definit
 - Export and import in JSON, CSV, and TXT formats
 - Intuitive and modern interface
 
-**What's new in version 2.0:**
-- Complete tag system with autocompletion
-- Word filtering by tags
-- Improved and more intuitive interface
-- Unified search and autocompletion
-- Export in multiple formats (JSON, CSV, TXT)
-- Recent search history
+**What's new in version 2.2:**
+- Full accessibility support (screen readers, keyboard navigation)
+- Related words system: automatic links between definitions
+- Smart import with conflict resolution
 
 **Basic usage:**
 - To open the extension, press Ctrl+Q (Windows and macOS)
@@ -48,13 +45,10 @@ Diccionario Personal es una extensión que te permite guardar y organizar defini
 - Exportación e importación en formatos JSON, CSV y TXT
 - Interfaz intuitiva y moderna
 
-**Novedades en la versión 2.0:**
-- Sistema completo de etiquetas con autocompletado
-- Filtrado de palabras por etiquetas
-- Interfaz mejorada y más intuitiva
-- Búsqueda unificada y autocompletado
-- Exportación en múltiples formatos (JSON, CSV, TXT)
-- Historial de búsquedas recientes
+**Novedades en la versión 2.2:**
+- Soporte completo de accesibilidad (lectores de pantalla, navegación por teclado)
+- Sistema de palabras relacionadas: enlaces automáticos entre definiciones
+- Importación inteligente con resolución de conflictos
 
 **Uso básico:**
 - Para abrir la extensión, presiona Ctrl+Q (Windows y macOS)
@@ -80,13 +74,10 @@ Dicionário Pessoal é uma extensão que permite salvar e organizar definições
 - Exportação e importação em formatos JSON, CSV e TXT
 - Interface intuitiva e moderna
 
-**Novidades na versão 2.0:**
-- Sistema completo de etiquetas com autocompletar
-- Filtragem de palavras por etiquetas
-- Interface melhorada e mais intuitiva
-- Busca unificada e autocompletar
-- Exportação em múltiplos formatos (JSON, CSV, TXT)
-- Histórico de buscas recentes
+**Novidades na versão 2.2:**
+- Suporte completo de acessibilidade (leitores de tela, navegação por teclado)
+- Sistema de palavras relacionadas: links automáticos entre definições
+- Importação inteligente com resolução de conflitos
 
 **Uso básico:**
 - Para abrir a extensão, pressione Ctrl+Q (Windows e macOS)
